@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Console | MAA SHARADA ENTERPRISES</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <!-- Google Fonts & Font Awesome Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+  <!-- ========================================================================
+       VIEW 1: ADMIN LOGIN SCREEN (Default when not logged in)
+       ======================================================================== -->
+  <div class="admin-login-wrapper" id="adminLoginView">
+    <div class="login-card">
+      <div class="login-header">
+        <span class="login-badge">
+          <i class="fas fa-lock"></i> Store Administration
+        </span>
+        <h2 class="login-title">MAA SHARADA ENTERPRISES</h2>
+        <p class="login-sub">Secure Admin Management Portal</p>
+      </div>
+
+      <div id="loginErrorMsg" style="display: none; background: rgba(239, 68, 68, 0.15); border: 1px solid var(--admin-danger); color: #FCA5A5; padding: 0.75rem; border-radius: 8px; font-size: 0.85rem; margin-bottom: 1rem; text-align: center;"></div>
+
+      <form id="adminLoginForm">
+        <div class="form-group">
+          <label class="form-label" for="adminEmail">Admin Email</label>
+          <input type="email" id="adminEmail" class="form-control" placeholder="admin@maasharada.com" required autocomplete="username">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="adminPassword">Password</label>
+          <input type="password" id="adminPassword" class="form-control" placeholder="••••••••••••" required autocomplete="current-password">
+        </div>
+
+        <button type="submit" id="adminLoginSubmitBtn" class="btn-admin-submit">
+          Sign In to Dashboard
+        </button>
+      </form>
+
+      <div class="login-footer-link">
+        <a href="index.html"><i class="fas fa-arrow-left"></i> Return to Main Website</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       VIEW 2: ADMIN DASHBOARD (When authenticated)
+       ======================================================================== -->
+  <div class="admin-app" id="adminDashboardView" style="display: none;">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-brand-icon">
+          <i class="fas fa-bolt"></i>
+        </div>
+        <div>
+          <span class="sidebar-brand-name">MAA SHARADA</span>
+          <span style="font-size: 0.7rem; color: var(--admin-accent); display: block;">ADMIN PANEL</span>
+        </div>
+      </div>
+
+      <ul class="sidebar-nav">
+        <li>
+          <a class="sidebar-link active" data-tab="dashboard">
+            <i class="fas fa-chart-line"></i> Dashboard
+          </a>
+        </li>
+        <li>
+          <a class="sidebar-link" data-tab="products">
+            <i class="fas fa-boxes-stacked"></i> Products Catalog
+          </a>
+        </li>
+        <li>
+          <a class="sidebar-link" data-tab="enquiries">
+            <i class="fas fa-inbox"></i> Customer Bookings & Orders
+          </a>
+        </li>
+        <li>
+          <a class="sidebar-link" data-tab="settings">
+            <i class="fas fa-sliders-h"></i> Shop Settings
+          </a>
+        </li>
+      </ul>
+
+      <div class="sidebar-bottom">
+        <div style="font-size: 0.8rem; color: var(--admin-text-muted); padding: 0.25rem 0.5rem;">
+          Signed in as: <strong id="adminUserDisplay" style="color: #FFFFFF;">Admin</strong>
+        </div>
+        <a href="index.html" class="btn-sidebar-action" target="_blank">
+          <i class="fas fa-external-link-alt"></i> View Live Site
+        </a>
+        <button class="btn-sidebar-action logout" id="adminLogoutBtn">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="admin-main">
+      <!-- Top Title Area -->
+      <div class="admin-header">
+        <div class="admin-title-area">
+          <h1>Store Command Center</h1>
+          <p>Panihari Road, Chaubeypur, Varanasi • Owner: ARUN KUMAR PATEL</p>
+        </div>
+      </div>
+
+      <!-- TAB 1: DASHBOARD OVERVIEW -->
+      <div class="tab-pane" id="tab-dashboard">
+        <!-- KPI Metrics -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-info">
+              <h3>Total Products</h3>
+              <div class="kpi-num" id="statTotalProducts">0</div>
+            </div>
+            <div class="kpi-icon">
+              <i class="fas fa-battery-full"></i>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-info">
+              <h3>In Stock Items</h3>
+              <div class="kpi-num" id="statInStockProducts">0</div>
+            </div>
+            <div class="kpi-icon green">
+              <i class="fas fa-check-circle"></i>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-info">
+              <h3>Total Enquiries</h3>
+              <div class="kpi-num" id="statTotalEnquiries">0</div>
+            </div>
+            <div class="kpi-icon amber">
+              <i class="fas fa-envelope-open-text"></i>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-info">
+              <h3>New Enquiries</h3>
+              <div class="kpi-num" id="statNewEnquiries">0</div>
+            </div>
+            <div class="kpi-icon amber">
+              <i class="fas fa-bell"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Help Note -->
+        <div class="admin-card-box">
+          <h3 class="card-box-title" style="margin-bottom: 0.75rem;">Welcome to the MAA SHARADA ENTERPRISES Admin Panel</h3>
+          <p style="color: var(--admin-text-muted); font-size: 0.92rem; line-height: 1.6;">
+            From this private console, you can manage your inventory (Amaron, Exide, Luminous, Solar, and Electrical products), monitor and respond to customer enquiries, change availability status, and configure the store phone number that appears throughout the customer-facing website.
+          </p>
+        </div>
+      </div>
+
+      <!-- TAB 2: PRODUCTS MANAGEMENT -->
+      <div class="tab-pane" id="tab-products" style="display: none;">
+        <div class="admin-card-box">
+          <div class="card-box-header">
+            <div>
+              <h2 class="card-box-title">Product Catalog Inventory</h2>
+              <p style="color: var(--admin-text-muted); font-size: 0.85rem;">Manage battery inventory, prices, and stock statuses.</p>
+            </div>
+            <button class="btn-primary" id="openAddProductModalBtn">
+              <i class="fas fa-plus"></i> Add New Product
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Image</th>
+                  <th>Product Details</th>
+                  <th>Brand</th>
+                  <th>Category</th>
+                  <th>Price</th>
+                  <th>Availability</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminProductsTableBody">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: CUSTOMER BOOKINGS & ORDERS -->
+      <div class="tab-pane" id="tab-enquiries" style="display: none;">
+        <div class="admin-card-box">
+          <div class="card-box-header">
+            <div>
+              <h2 class="card-box-title"><i class="fas fa-shopping-bag" style="color: var(--admin-accent); margin-right: 0.4rem;"></i> Customer Orders & Bookings (ग्राहक आर्डर व बुकिंग)</h2>
+              <p style="color: var(--admin-text-muted); font-size: 0.85rem;">All customer booking requests stored safely in the database. Only Admin can update status or delete records.</p>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="font-size: 0.82rem; color: var(--admin-text-muted);">Status Filter:</span>
+              <select id="adminEnquiryStatusFilter" class="filter-select">
+                <option value="ALL">All Bookings</option>
+                <option value="NEW">NEW</option>
+                <option value="CONTACTED">CONTACTED</option>
+                <option value="COMPLETED">COMPLETED</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Booking Date</th>
+                  <th>Customer Info</th>
+                  <th>Product / Qty</th>
+                  <th>Delivery Address</th>
+                  <th>Customer Note / Message</th>
+                  <th>Order Status</th>
+                  <th>Admin Action (Delete)</th>
+                </tr>
+              </thead>
+              <tbody id="adminEnquiriesTableBody">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: SHOP SETTINGS -->
+      <div class="tab-pane" id="tab-settings" style="display: none;">
+        <div class="admin-card-box">
+          <div class="card-box-header">
+            <div>
+              <h2 class="card-box-title">Shop Information & Global Helpline</h2>
+              <p style="color: var(--admin-text-muted); font-size: 0.85rem;">
+                Changes made here immediately update the customer website.
+              </p>
+            </div>
+          </div>
+
+          <form id="adminSettingsForm">
+            <div class="settings-form-grid">
+              <!-- Crucial Configurable Helpline Setting -->
+              <div class="form-group settings-full-width">
+                <label class="form-label" for="settingPhone" style="color: var(--admin-accent);">
+                  <i class="fas fa-phone-alt"></i> SHOP_PHONE_NUMBER (Customer Helpline)
+                </label>
+                <input type="text" id="settingPhone" class="form-control" placeholder="e.g. 9876543210 (Leave blank if not yet available)">
+                <small style="color: var(--admin-text-muted); display: block; margin-top: 0.35rem;">
+                  When filled, this phone number automatically activates the Call & WhatsApp support buttons site-wide. If left empty, the site displays "Helpline number coming soon".
+                </small>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="settingEmail">Shop Email</label>
+                <input type="email" id="settingEmail" class="form-control" placeholder="Contact email if available">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="settingOwner">Shop Owner</label>
+                <input type="text" id="settingOwner" class="form-control" value="ARUN KUMAR PATEL">
+              </div>
+
+              <div class="form-group settings-full-width">
+                <label class="form-label" for="settingAddress">Shop Address</label>
+                <input type="text" id="settingAddress" class="form-control" value="Panihari Road, Chaubeypur, Near Petrol Pump, Varanasi, Uttar Pradesh, India">
+              </div>
+
+              <div class="form-group settings-full-width">
+                <label class="form-label" for="settingTagline">Business Tagline</label>
+                <input type="text" id="settingTagline" class="form-control" value="BATTERY • INVERTER • SOLAR • ELECTRICAL SOLUTIONS">
+              </div>
+
+              <div class="form-group settings-full-width">
+                <label class="form-label" for="settingMap">Google Maps Search Query</label>
+                <input type="text" id="settingMap" class="form-control" value="Panihari Road, Chaubeypur, Near Petrol Pump, Varanasi, Uttar Pradesh, India">
+              </div>
+            </div>
+
+            <button type="submit" class="btn-primary" style="margin-top: 1.5rem;">
+              <i class="fas fa-save"></i> Save Global Settings
+            </button>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ========================================================================
+       MODAL: ADD / EDIT PRODUCT
+       ======================================================================== -->
+  <div class="modal-overlay" id="adminProductModal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title" id="adminProductModalTitle">Add Product</h3>
+        <button class="modal-close-btn admin-modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="adminProductForm">
+          <div class="form-group">
+            <label class="form-label" for="modalProdName">Product Name <span class="req">*</span></label>
+            <input type="text" id="modalProdName" class="form-control" placeholder="e.g. Amaron Hi-Life 60Ah Car Battery" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="modalProdBrand">Brand <span class="req">*</span></label>
+              <select id="modalProdBrand" class="form-control" required>
+                <option value="AMARON">AMARON</option>
+                <option value="EXIDE">EXIDE</option>
+                <option value="LUMINOUS">LUMINOUS</option>
+                <option value="OTHER">OTHER</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="modalProdCategory">Category <span class="req">*</span></label>
+              <select id="modalProdCategory" class="form-control" required>
+                <option value="BATTERIES">BATTERIES</option>
+                <option value="CAR BATTERIES">CAR BATTERIES</option>
+                <option value="2-WHEELER BATTERIES">2-WHEELER BATTERIES</option>
+                <option value="INVERTERS">INVERTERS</option>
+                <option value="SOLAR PANELS">SOLAR PANELS</option>
+                <option value="SMALL BATTERIES">SMALL BATTERIES</option>
+                <option value="ELECTRICAL ITEMS">ELECTRICAL ITEMS</option>
+                <option value="LIGHTS">LIGHTS</option>
+                <option value="BATTERY WATER">BATTERY WATER</option>
+                <option value="BATTERY ACID">BATTERY ACID</option>
+                <option value="OTHER ACCESSORIES">OTHER ACCESSORIES</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="modalProdPrice">Price (if configured)</label>
+              <input type="text" id="modalProdPrice" class="form-control" placeholder="e.g. Price available on enquiry">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="modalProdAvailability">Availability</label>
+              <select id="modalProdAvailability" class="form-control">
+                <option value="In Stock">In Stock</option>
+                <option value="Available on Order">Available on Order</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="modalProdImage">Product Image Path</label>
+            <select id="modalProdImage" class="form-control">
+              <option value="/images/products/amaron_car_battery.jpg">Amaron Car Battery (Photorealistic)</option>
+              <option value="/images/products/amaron_bike_battery.jpg">Amaron Bike / Two Wheeler 4L/5L Battery</option>
+              <option value="/images/products/amaron_tall_tubular.jpg">Amaron Tall Tubular Inverter Battery</option>
+              <option value="/images/products/exide_car_battery.jpg">Exide Car Battery</option>
+              <option value="/images/products/exide_bike_battery.jpg">Exide Motorcycle Two Wheeler Battery</option>
+              <option value="/images/products/luminous_inverter_battery.jpg">Luminous Inverlast Tall Tubular Battery</option>
+              <option value="/images/products/pure_sine_wave_inverter.jpg">Pure Sine Wave Home Inverter Unit</option>
+              <option value="/images/products/solar_panel.jpg">Monocrystalline Solar Panel</option>
+              <option value="/images/products/distilled_battery_water.jpg">Distilled Battery Water 5L</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="modalProdDesc">Description</label>
+            <textarea id="modalProdDesc" class="form-control" rows="3" placeholder="Product features and applications..."></textarea>
+          </div>
+
+          <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem;">
+            <input type="checkbox" id="modalProdFeatured" style="width: 18px; height: 18px; cursor: pointer;">
+            <label for="modalProdFeatured" style="cursor: pointer; font-size: 0.88rem; color: #FFFFFF;">Feature on Homepage Spotlight</label>
+          </div>
+
+          <button type="submit" class="btn-primary" style="width: 100%; margin-top: 1rem;">
+            Save Product
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Toast Container -->
+  <div class="toast-container" id="adminToastContainer"></div>
+
+  <script src="js/admin.js"></script>
+</body>
+</html>
