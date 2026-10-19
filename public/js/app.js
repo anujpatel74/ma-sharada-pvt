@@ -14,7 +14,7 @@ const API_BASE = (() => {
 /**
  * MAA SHARADA ENTERPRISES - Client Application Logic
  * Premium Dashboard & Catalogue Architecture
- * Location: Panihari Road, Chaubeypur, Near Petrol Pump, Varanasi
+ * Location: Gazipur road,Nearby Shahpur petrol pump,Panihari chaubepur Varanasi
  * Owner: ARUN KUMAR PATEL
  */
 
@@ -27,10 +27,10 @@ document.addEventListener('DOMContentLoaded', () => {
       SHOP_NAME: 'MAA SHARADA ENTERPRISES',
       SHOP_OWNER: 'ARUN KUMAR PATEL',
       SHOP_TAGLINE: 'Battery • Inverter • Solar • Electrical Solutions',
-      SHOP_ADDRESS: 'Panihari Road, Chaubeypur, Near Petrol Pump, Varanasi, Uttar Pradesh, India',
+      SHOP_ADDRESS: 'Gazipur road,Nearby Shahpur petrol pump,Panihari chaubepur Varanasi',
       SHOP_PHONE_NUMBER: '+91 63868 50612',
       SHOP_EMAIL: 'contact@maasharada.com',
-      MAPS_QUERY: 'Panihari Road, Chaubeypur, Near Petrol Pump, Varanasi'
+      MAPS_QUERY: 'Gazipur road,Nearby Shahpur petrol pump,Panihari chaubepur Varanasi'
     },
     activeBrand: 'ALL',
     activeCategory: 'ALL',
@@ -354,7 +354,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const mapBtns = document.querySelectorAll('.shop-map-link');
     mapBtns.forEach(btn => {
-      const query = encodeURIComponent(state.settings.MAPS_QUERY || 'Panihari Road, Chaubeypur, Near Petrol Pump, Varanasi');
+      const query = encodeURIComponent(state.settings.MAPS_QUERY || 'Gazipur road,Nearby Shahpur petrol pump,Panihari chaubepur Varanasi');
       btn.href = `https://www.google.com/maps/search/?api=1&query=${query}`;
       btn.target = '_blank';
       btn.rel = 'noopener noreferrer';

@@ -103,10 +103,10 @@ function seedDefaultData() {
         ['SHOP_NAME', 'MAA SHARADA ENTERPRISES'],
         ['SHOP_OWNER', 'ARUN KUMAR PATEL'],
         ['SHOP_TAGLINE', 'BATTERY • INVERTER • SOLAR • ELECTRICAL SOLUTIONS'],
-        ['SHOP_ADDRESS', 'Panihari Road, Chaubeypur, Near Petrol Pump, Varanasi, Uttar Pradesh, India'],
+        ['SHOP_ADDRESS', 'Gazipur road,Nearby Shahpur petrol pump,Panihari chaubepur Varanasi'],
         ['SHOP_PHONE_NUMBER', process.env.SHOP_PHONE_NUMBER || ''],
         ['SHOP_EMAIL', process.env.SHOP_EMAIL || ''],
-        ['MAPS_QUERY', 'Panihari Road, Chaubeypur, Near Petrol Pump, Varanasi, Uttar Pradesh, India']
+        ['MAPS_QUERY', 'Gazipur road,Nearby Shahpur petrol pump,Panihari chaubepur Varanasi']
       ];
       const stmt = db.prepare(`INSERT INTO settings (key, value) VALUES (?, ?)`);
       defaultSettings.forEach(([k, v]) => stmt.run(k, v));
