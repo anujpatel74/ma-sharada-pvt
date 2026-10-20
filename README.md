@@ -1,6 +1,6 @@
 # MAA SHARADA ENTERPRISES — Web Application
 
-A professional, modern, fast, and production-ready business web application engineered for **MAA SHARADA ENTERPRISES**, located in Gazipur road,Nearby Shahpur petrol pump,Panihari chaubepur Varanasi.
+A professional, modern, fast, and production-ready business web application engineered for **MAA SHARADA ENTERPRISES**, located in Gazipur road,Nearby Shahpur Aditya Petrol Pump,Panihari,Chaubepur Varanasi.
 
 Owner: **ARUN KUMAR PATEL**  
 Offerings: **Battery • Inverter • Solar • Electrical Products • Repair & Charging Services**

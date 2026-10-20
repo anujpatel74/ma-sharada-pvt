@@ -14,7 +14,7 @@ const API_BASE = (() => {
 /**
  * MAA SHARADA ENTERPRISES - Client Application Logic
  * Premium Dashboard & Catalogue Architecture
- * Location: Gazipur road,Nearby Shahpur petrol pump,Panihari chaubepur Varanasi
+ * Location: Gazipur road,Nearby Shahpur Aditya Petrol Pump,Panihari,Chaubepur Varanasi
  * Owner: ARUN KUMAR PATEL
  */
 
@@ -27,10 +27,10 @@ document.addEventListener('DOMContentLoaded', () => {
       SHOP_NAME: 'MAA SHARADA ENTERPRISES',
       SHOP_OWNER: 'ARUN KUMAR PATEL',
       SHOP_TAGLINE: 'Battery • Inverter • Solar • Electrical Solutions',
-      SHOP_ADDRESS: 'Gazipur road,Nearby Shahpur petrol pump,Panihari chaubepur Varanasi',
+      SHOP_ADDRESS: 'Gazipur road,Nearby Shahpur Aditya Petrol Pump,Panihari,Chaubepur Varanasi',
       SHOP_PHONE_NUMBER: '+91 63868 50612',
       SHOP_EMAIL: 'contact@maasharada.com',
-      MAPS_QUERY: 'Gazipur road,Nearby Shahpur petrol pump,Panihari chaubepur Varanasi'
+      MAPS_QUERY: 'Gazipur road,Nearby Shahpur Aditya Petrol Pump,Panihari,Chaubepur Varanasi'
     },
     activeBrand: 'ALL',
     activeCategory: 'ALL',
@@ -244,10 +244,239 @@ document.addEventListener('DOMContentLoaded', () => {
     { title: 'Other Electrical Items', icon: '🔌', category: 'Electrical', description: 'MCBs, modular switches, copper wiring, sockets, tapes, and accessories.' }
   ];
 
+  // ==========================================================================
+  // PREMIUM HERO IMAGE SLIDER CONTROLLER
+  // ==========================================================================
+  function initHeroSlider() {
+    const sliderContainer = document.getElementById('heroSliderContainer') || document.querySelector('.hero-slider-section');
+    if (!sliderContainer) return;
+
+    const slides = sliderContainer.querySelectorAll('.slider-slide');
+    const dots = sliderContainer.querySelectorAll('.slider-dot');
+    const prevBtn = document.getElementById('sliderPrevBtn');
+    const nextBtn = document.getElementById('sliderNextBtn');
+    const progressBar = document.getElementById('sliderProgressBar');
+
+    if (!slides || slides.length === 0) return;
+
+    const totalSlides = slides.length;
+    let currentIndex = 0;
+    let autoplayTimer = null;
+    let progressTimer = null;
+    let progressStartTime = 0;
+    const AUTOPLAY_DURATION = 5000; // 5 seconds interval
+    let isPaused = false;
+
+    const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function goToSlide(targetIndex, resetAutoplay = true) {
+      const nextIndex = (targetIndex + totalSlides) % totalSlides;
+      if (nextIndex === currentIndex && slides[currentIndex].classList.contains('active')) {
+        if (resetAutoplay && !isPaused && !prefersReducedMotion) restartAutoplay();
+        return;
+      }
+
+      // Update slide active states
+      slides.forEach((slide, idx) => {
+        if (idx === nextIndex) {
+          slide.classList.add('active');
+          slide.removeAttribute('aria-hidden');
+        } else {
+          slide.classList.remove('active');
+          slide.setAttribute('aria-hidden', 'true');
+        }
+      });
+
+      // Update dot active states
+      dots.forEach((dot, idx) => {
+        const isCurrent = idx === nextIndex;
+        dot.classList.toggle('active', isCurrent);
+        dot.setAttribute('aria-selected', isCurrent ? 'true' : 'false');
+      });
+
+      currentIndex = nextIndex;
+
+      if (resetAutoplay && !isPaused && !prefersReducedMotion) {
+        restartAutoplay();
+      }
+    }
+
+    function nextSlide() {
+      goToSlide(currentIndex + 1);
+    }
+
+    function prevSlide() {
+      goToSlide(currentIndex - 1);
+    }
+
+    // Smooth Progress Bar Animation
+    function resetProgressBar() {
+      if (!progressBar) return;
+      cancelAnimationFrame(progressTimer);
+      progressBar.style.transition = 'none';
+      progressBar.style.width = '0%';
+    }
+
+    function runProgressBar() {
+      if (!progressBar || prefersReducedMotion) return;
+      resetProgressBar();
+      progressStartTime = performance.now();
+
+      function step(now) {
+        if (isPaused) return;
+        const elapsed = now - progressStartTime;
+        const percent = Math.min(100, (elapsed / AUTOPLAY_DURATION) * 100);
+        progressBar.style.width = `${percent}%`;
+
+        if (elapsed < AUTOPLAY_DURATION) {
+          progressTimer = requestAnimationFrame(step);
+        }
+      }
+
+      progressTimer = requestAnimationFrame(step);
+    }
+
+    function startAutoplay() {
+      if (prefersReducedMotion) return;
+      clearTimeout(autoplayTimer);
+      cancelAnimationFrame(progressTimer);
+      runProgressBar();
+      autoplayTimer = setTimeout(() => {
+        nextSlide();
+      }, AUTOPLAY_DURATION);
+    }
+
+    function pauseAutoplay() {
+      isPaused = true;
+      clearTimeout(autoplayTimer);
+      cancelAnimationFrame(progressTimer);
+    }
+
+    function resumeAutoplay() {
+      if (!isPaused) return;
+      isPaused = false;
+      if (!prefersReducedMotion) {
+        startAutoplay();
+      }
+    }
+
+    function restartAutoplay() {
+      isPaused = false;
+      clearTimeout(autoplayTimer);
+      cancelAnimationFrame(progressTimer);
+      startAutoplay();
+    }
+
+    // Attach Click Handlers to Arrows
+    if (prevBtn) {
+      prevBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        prevSlide();
+      });
+    }
+
+    if (nextBtn) {
+      nextBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        nextSlide();
+      });
+    }
+
+    // Attach Click Handlers to Dots
+    dots.forEach((dot, idx) => {
+      dot.addEventListener('click', (e) => {
+        e.preventDefault();
+        goToSlide(idx);
+      });
+    });
+
+    // Pause on desktop hover
+    sliderContainer.addEventListener('mouseenter', () => {
+      pauseAutoplay();
+    });
+
+    sliderContainer.addEventListener('mouseleave', () => {
+      resumeAutoplay();
+    });
+
+    // Pause on focus (keyboard users or interacting with controls)
+    sliderContainer.addEventListener('focusin', () => {
+      pauseAutoplay();
+    });
+
+    sliderContainer.addEventListener('focusout', (e) => {
+      if (!sliderContainer.contains(e.relatedTarget)) {
+        resumeAutoplay();
+      }
+    });
+
+    // Visibility change: Pause when tab is inactive, resume when active
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        pauseAutoplay();
+      } else {
+        resumeAutoplay();
+      }
+    });
+
+    // Keyboard Navigation (Left / Right Arrow Keys)
+    sliderContainer.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        prevSlide();
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        nextSlide();
+      }
+    });
+
+    // Touch Swipe Gestures for Mobile Phones and Tablets
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchEndX = 0;
+    let touchEndY = 0;
+    const SWIPE_THRESHOLD = 40; // minimum distance in px
+
+    sliderContainer.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      }
+    }, { passive: true });
+
+    sliderContainer.addEventListener('touchend', (e) => {
+      if (e.changedTouches.length === 1) {
+        touchEndX = e.changedTouches[0].clientX;
+        touchEndY = e.changedTouches[0].clientY;
+
+        const deltaX = touchEndX - touchStartX;
+        const deltaY = touchEndY - touchStartY;
+
+        // Ensure horizontal swipe is dominant over vertical scroll
+        if (Math.abs(deltaX) > SWIPE_THRESHOLD && Math.abs(deltaX) > Math.abs(deltaY) * 1.2) {
+          if (deltaX < 0) {
+            // Swiped Left -> Next Slide
+            nextSlide();
+          } else {
+            // Swiped Right -> Previous Slide
+            prevSlide();
+          }
+        }
+      }
+    }, { passive: true });
+
+    // Initial setup
+    goToSlide(0, false);
+    if (!prefersReducedMotion) {
+      startAutoplay();
+    }
+  }
+
   // Initialize
   initApp();
 
   async function initApp() {
+    initHeroSlider();
     setupEventListeners();
     await loadSettings();
     await loadServices();
@@ -289,23 +518,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 1. Load Settings
   async function loadSettings() {
-    try {
-      const res = await fetch(API_BASE + '/api/settings');
-      const json = await res.json();
-      if (json.success && json.data) {
-        state.settings = { ...state.settings, ...json.data };
-      }
-    } catch (err) {
-      console.warn('Using default settings (offline or file mode):', err);
-    }
-
-    // Merge with any freshly saved admin settings from localStorage
+    // 1. Check local cache first for fast rendering
     try {
       const cached = JSON.parse(localStorage.getItem('mse_shop_settings') || '{}');
       if (cached && typeof cached === 'object') {
         state.settings = { ...state.settings, ...cached };
       }
     } catch (e) {}
+
+    // 2. Fetch authoritative shop settings from server
+    try {
+      const res = await fetch(API_BASE + '/api/settings');
+      const json = await res.json();
+      if (json.success && json.data) {
+        state.settings = { ...state.settings, ...json.data };
+        // Sync fresh authoritative server settings into localStorage
+        try {
+          localStorage.setItem('mse_shop_settings', JSON.stringify(state.settings));
+        } catch (e) {}
+      }
+    } catch (err) {
+      console.warn('Using default settings (offline or file mode):', err);
+    }
 
     updateUIWithSettings();
   }
@@ -354,7 +588,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const mapBtns = document.querySelectorAll('.shop-map-link');
     mapBtns.forEach(btn => {
-      const query = encodeURIComponent(state.settings.MAPS_QUERY || 'Gazipur road,Nearby Shahpur petrol pump,Panihari chaubepur Varanasi');
+      const query = encodeURIComponent(state.settings.MAPS_QUERY || 'Gazipur road,Nearby Shahpur Aditya Petrol Pump,Panihari,Chaubepur Varanasi');
       btn.href = `https://www.google.com/maps/search/?api=1&query=${query}`;
       btn.target = '_blank';
       btn.rel = 'noopener noreferrer';
@@ -533,28 +767,49 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Mobile nav toggle
+    const mobileNavBackdrop = document.getElementById('mobileNavBackdrop');
     if (mobileToggle && navMenu) {
-      mobileToggle.addEventListener('click', (e) => {
-        e.stopPropagation();
+      const toggleMenu = (e) => {
+        if (e) e.stopPropagation();
         const isOpen = navMenu.classList.toggle('active');
         mobileToggle.classList.toggle('active', isOpen);
+        mobileToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
         document.body.classList.toggle('nav-open', isOpen);
+      };
+
+      const closeMenu = () => {
+        navMenu.classList.remove('active');
+        mobileToggle.classList.remove('active');
+        mobileToggle.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('nav-open');
+      };
+
+      mobileToggle.addEventListener('click', toggleMenu);
+      mobileToggle.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggleMenu(e);
+        }
       });
 
+      if (mobileNavBackdrop) {
+        mobileNavBackdrop.addEventListener('click', closeMenu);
+      }
+
       navMenu.querySelectorAll('.nav-link').forEach(link => {
-        link.addEventListener('click', () => {
-          navMenu.classList.remove('active');
-          mobileToggle.classList.remove('active');
-          document.body.classList.remove('nav-open');
-        });
+        link.addEventListener('click', closeMenu);
       });
 
       // Close menu when clicking outside
       document.addEventListener('click', (e) => {
         if (navMenu.classList.contains('active') && !navMenu.contains(e.target) && !mobileToggle.contains(e.target)) {
-          navMenu.classList.remove('active');
-          mobileToggle.classList.remove('active');
-          document.body.classList.remove('nav-open');
+          closeMenu();
+        }
+      });
+
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && navMenu.classList.contains('active')) {
+          closeMenu();
         }
       });
     }

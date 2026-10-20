@@ -16,7 +16,7 @@ exports.getSettings = (req, res) => {
     if (!settingsObj.SHOP_NAME) settingsObj.SHOP_NAME = 'MAA SHARADA ENTERPRISES';
     if (!settingsObj.SHOP_OWNER) settingsObj.SHOP_OWNER = 'ARUN KUMAR PATEL';
     if (!settingsObj.SHOP_TAGLINE) settingsObj.SHOP_TAGLINE = 'BATTERY • INVERTER • SOLAR • ELECTRICAL SOLUTIONS';
-    if (!settingsObj.SHOP_ADDRESS) settingsObj.SHOP_ADDRESS = 'Gazipur road,Nearby Shahpur petrol pump,Panihari chaubepur Varanasi';
+    if (!settingsObj.SHOP_ADDRESS) settingsObj.SHOP_ADDRESS = 'Gazipur road,Nearby Shahpur Aditya Petrol Pump,Panihari,Chaubepur Varanasi';
 
     res.json({ success: true, data: settingsObj });
   });
