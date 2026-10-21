@@ -24,4 +24,4 @@ database_id = "daa51131-2961-4861-8806-96f6dbe41a7e"
 # 3. Default Public Environment Variables
 [vars]
 SHOP_PHONE_NUMBER = "+91 63868 50612"
-SHOP_EMAIL = "contact@maasharada.com"
+SHOP_EMAIL = "[EMAIL_ADDRESS]"

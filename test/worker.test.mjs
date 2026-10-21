@@ -14,6 +14,8 @@ const mockAssets = {
     let filePath = path.join(publicDir, url.pathname);
     if (url.pathname === '/' || url.pathname === '') {
       filePath = path.join(publicDir, 'index.html');
+    } else if (url.pathname === '/admin' || url.pathname === '/admin/') {
+      filePath = path.join(publicDir, 'admin.html');
     }
     if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
       const ext = path.extname(filePath);

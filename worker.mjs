@@ -294,19 +294,39 @@ export default {
     // B. STATIC ASSET & SPA ROUTING (Worker with Assets)
     // --------------------------------------------------------------------------
     if (env.ASSETS) {
-      // Direct rewrite for admin console URL
+      // 1. Direct handling for admin console URL
       if (pathname === '/admin' || pathname === '/admin/') {
-        const adminReq = new Request(new URL('/admin.html', request.url), request);
-        return await env.ASSETS.fetch(adminReq);
+        const cleanAdminUrl = new URL('/admin', request.url);
+        cleanAdminUrl.search = url.search;
+        let adminRes = await env.ASSETS.fetch(new Request(cleanAdminUrl, request));
+
+        // If Cloudflare edge returns a 3xx redirect (e.g. 307 clean URL loop), intercept and return 200 HTML directly
+        if (adminRes.status >= 300 && adminRes.status < 400) {
+          const directHtmlUrl = new URL('/admin.html', request.url);
+          const rawHtmlRes = await env.ASSETS.fetch(new Request(directHtmlUrl, request));
+          if (rawHtmlRes.status === 200) {
+            return new Response(rawHtmlRes.body, {
+              status: 200,
+              headers: {
+                'Content-Type': 'text/html;charset=UTF-8',
+                'Cache-Control': 'public, max-age=0, must-revalidate'
+              }
+            });
+          }
+        }
+
+        if (adminRes.status !== 404) {
+          return adminRes;
+        }
       }
 
-      // Try fetching requested static asset
+      // 2. Try fetching requested static asset
       const assetRes = await env.ASSETS.fetch(request);
       if (assetRes.status !== 404) {
         return assetRes;
       }
 
-      // SPA Fallback to index.html for customer URLs
+      // 3. SPA Fallback to index.html for customer URLs
       const indexReq = new Request(new URL('/index.html', request.url), request);
       return await env.ASSETS.fetch(indexReq);
     }

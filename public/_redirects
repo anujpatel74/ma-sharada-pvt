@@ -1,3 +1,1 @@
-# Cloudflare Routing & Redirects
-/admin        /admin.html      200
-/admin/       /admin.html      200
+# Cloudflare Routing
