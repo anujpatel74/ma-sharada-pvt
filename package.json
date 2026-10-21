@@ -6,8 +6,8 @@
   "scripts": {
     "start": "node server/server.js",
     "dev": "node server/server.js",
-    "deploy": "wrangler deploy",
-    "dev:worker": "wrangler dev",
+    "deploy": "npx wrangler deploy",
+    "dev:worker": "npx wrangler dev",
     "db:export": "node scripts/export_d1.js",
     "test": "node test/worker.test.mjs"
   },
@@ -27,5 +27,8 @@
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.4.0",
     "sqlite3": "^6.0.1"
+  },
+  "devDependencies": {
+    "wrangler": "^4.151.3"
   }
 }
