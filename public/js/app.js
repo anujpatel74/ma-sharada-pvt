@@ -55,9 +55,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const modalCloseButtons = document.querySelectorAll('.modal-close-btn');
   const enquiryForm = document.getElementById('enquiryForm');
 
-  // Format image path safely for both http:// and file:///
+  // Format image path safely for both http://, https://, /uploads/, and file:///
   function formatImagePath(path) {
-    if (!path) return 'images/products/amaron_car_battery.jpg';
+    if (!path) return 'images/hero/slider_battery_inverter.png';
+    if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:')) {
+      return path;
+    }
+    if (path.startsWith('/uploads/')) {
+      return API_BASE ? (API_BASE + path) : path;
+    }
     return path.startsWith('/') ? path.substring(1) : path;
   }
 
@@ -245,8 +251,96 @@ document.addEventListener('DOMContentLoaded', () => {
   ];
 
   // ==========================================================================
-  // PREMIUM HERO IMAGE SLIDER CONTROLLER
+  // DYNAMIC HERO SLIDER DATA LOADER & CONTROLLER
   // ==========================================================================
+  async function loadHeroSlides() {
+    const sliderTrack = document.getElementById('sliderTrack');
+    if (!sliderTrack) {
+      initHeroSlider();
+      return;
+    }
+
+    try {
+      const res = await fetch(API_BASE + '/api/slides');
+      const json = await res.json();
+
+      if (json && json.success && Array.isArray(json.data) && json.data.length > 0) {
+        renderHeroSlides(json.data);
+      }
+    } catch (err) {
+      console.warn('Hero slides API notice: Using built-in default slides.', err.message);
+    } finally {
+      initHeroSlider();
+    }
+  }
+
+  function renderHeroSlides(slides) {
+    const sliderTrack = document.getElementById('sliderTrack');
+    const sliderDots = document.getElementById('sliderDots');
+    if (!sliderTrack) return;
+
+    const total = slides.length;
+
+    sliderTrack.innerHTML = slides.map((s, idx) => {
+      const isFirst = idx === 0;
+      const imgPath = formatImagePath(s.image_url);
+      const badgeIcon = s.badge_icon || 'fas fa-bolt';
+      const badgeColor = s.badge_color || 'default';
+      const badgeClass = (badgeColor && badgeColor !== 'default') ? badgeColor : '';
+      const btnPrimaryClass = badgeColor === 'solar' ? 'solar' : (badgeColor === 'amber' ? 'amber' : '');
+
+      return `
+        <article class="slider-slide ${isFirst ? 'active' : ''}" data-index="${idx}" aria-roledescription="slide"
+          aria-label="Slide ${idx + 1} of ${total}: ${escapeHTML(s.title)}" ${!isFirst ? 'aria-hidden="true"' : ''}>
+          <div class="slide-bg">
+            <img src="${escapeHTML(imgPath)}"
+              alt="${escapeHTML(s.title)}"
+              loading="${isFirst ? 'eager' : 'lazy'}"
+              ${isFirst ? 'fetchpriority="high"' : ''}
+              onerror="this.onerror=null; this.src='images/real_photos/shop_real_interior.jpg'">
+            <div class="slide-overlay"></div>
+          </div>
+          <div class="container slide-content-wrapper">
+            <div class="slide-content">
+              ${s.badge_text ? `
+                <span class="slide-badge-pill ${escapeHTML(badgeClass)}">
+                  <i class="${escapeHTML(badgeIcon)}"></i> ${escapeHTML(s.badge_text)}
+                </span>
+              ` : ''}
+              <${isFirst ? 'h1' : 'h2'} class="slide-heading">${escapeHTML(s.title)}</${isFirst ? 'h1' : 'h2'}>
+              ${s.subtitle ? `<p class="slide-desc">${escapeHTML(s.subtitle)}</p>` : ''}
+              <div class="slide-cta-row">
+                ${s.button_text ? `
+                  <a href="${escapeHTML(s.button_link || '#products')}" class="btn-slider-primary ${escapeHTML(btnPrimaryClass)}">
+                    ${escapeHTML(s.button_text)}
+                  </a>
+                ` : ''}
+                ${s.secondary_button_text ? `
+                  <a href="${escapeHTML(s.secondary_button_link || 'tel:+916386850612')}" class="btn-slider-secondary shop-phone-call-btn">
+                    <i class="fas fa-phone-alt"></i> ${escapeHTML(s.secondary_button_text)}
+                  </a>
+                ` : ''}
+              </div>
+            </div>
+          </div>
+        </article>
+      `;
+    }).join('');
+
+    if (sliderDots) {
+      sliderDots.innerHTML = slides.map((s, idx) => `
+        <button class="slider-dot ${idx === 0 ? 'active' : ''}" role="tab" aria-selected="${idx === 0 ? 'true' : 'false'}"
+          aria-label="Slide ${idx + 1}: ${escapeHTML(s.title)}" data-slide="${idx}"></button>
+      `).join('');
+    }
+
+    // Sync phone number to dynamic call buttons if already loaded
+    if (state.settings && state.settings.SHOP_PHONE_NUMBER) {
+      updateShopPhoneInDOM(state.settings.SHOP_PHONE_NUMBER);
+    }
+  }
+
+  // PREMIUM HERO IMAGE SLIDER CONTROLLER
   function initHeroSlider() {
     const sliderContainer = document.getElementById('heroSliderContainer') || document.querySelector('.hero-slider-section');
     if (!sliderContainer) return;
@@ -476,8 +570,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initApp();
 
   async function initApp() {
-    initHeroSlider();
     setupEventListeners();
+    await loadHeroSlides();
     await loadSettings();
     await loadServices();
     await loadProducts();

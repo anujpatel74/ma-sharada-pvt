@@ -79,6 +79,11 @@
           </a>
         </li>
         <li>
+          <a class="sidebar-link" data-tab="slider">
+            <i class="fas fa-images"></i> Manage Homepage Slider
+          </a>
+        </li>
+        <li>
           <a class="sidebar-link" data-tab="products">
             <i class="fas fa-boxes-stacked"></i> Products Catalog
           </a>
@@ -161,14 +166,78 @@
               <i class="fas fa-bell"></i>
             </div>
           </div>
+
+          <div class="kpi-card">
+            <div class="kpi-info">
+              <h3>Active Slides</h3>
+              <div class="kpi-num" id="statActiveSlides">0</div>
+            </div>
+            <div class="kpi-icon" style="color: var(--admin-accent); background: rgba(0, 210, 255, 0.1);">
+              <i class="fas fa-images"></i>
+            </div>
+          </div>
         </div>
 
         <!-- Quick Help Note -->
         <div class="admin-card-box">
           <h3 class="card-box-title" style="margin-bottom: 0.75rem;">Welcome to the MAA SHARADA ENTERPRISES Admin Panel</h3>
           <p style="color: var(--admin-text-muted); font-size: 0.92rem; line-height: 1.6;">
-            From this private console, you can manage your inventory (Amaron, Exide, Luminous, Solar, and Electrical products), monitor and respond to customer enquiries, change availability status, and configure the store phone number that appears throughout the customer-facing website.
+            From this private console, you can manage your inventory (Amaron, Exide, Luminous, Solar, and Electrical products), customize and reorder your public Homepage Slider with real photos, monitor customer bookings, change availability status, and configure the store phone number that appears throughout the customer-facing website.
           </p>
+        </div>
+      </div>
+
+      <!-- TAB: MANAGE HOMEPAGE SLIDER -->
+      <div class="tab-pane" id="tab-slider" style="display: none;">
+        <div class="admin-card-box">
+          <div class="card-box-header">
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                <h2 class="card-box-title"><i class="fas fa-images" style="color: var(--admin-accent); margin-right: 0.4rem;"></i> Manage Homepage Slider (होमपेज स्लाइडर)</h2>
+                <span id="adminStorageBadge" class="badge-status-pill CONTACTED" style="cursor: pointer; font-size: 0.78rem;" title="Click to view storage status">
+                  <i class="fas fa-server"></i> Storage: Checking...
+                </span>
+              </div>
+              <p style="color: var(--admin-text-muted); font-size: 0.85rem; margin-top: 0.25rem;">
+                Upload, replace, reorder, and enable/disable hero banner slides. Changes reflect immediately on the live homepage without redeploying.
+              </p>
+            </div>
+            <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+              <button class="btn-primary" id="openAddSlideModalBtn">
+                <i class="fas fa-plus"></i> Upload New Slide
+              </button>
+            </div>
+          </div>
+
+          <!-- Storage Status Banner -->
+          <div id="storageStatusBanner" style="margin-bottom: 1.25rem; padding: 0.85rem 1rem; border-radius: 8px; font-size: 0.84rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; background: rgba(0, 210, 255, 0.08); border: 1px solid rgba(0, 210, 255, 0.25); color: #BAE6FD;">
+            <div style="display: flex; align-items: center; gap: 0.65rem;">
+              <i class="fas fa-cloud" style="font-size: 1.1rem; color: var(--admin-accent);" id="storageBannerIcon"></i>
+              <span id="storageBannerText">Checking persistent storage setup...</span>
+            </div>
+            <button type="button" id="btnOpenStorageModal" style="background: transparent; border: 1px solid rgba(186, 230, 253, 0.4); color: #BAE6FD; padding: 0.25rem 0.65rem; border-radius: 6px; font-size: 0.76rem; cursor: pointer; white-space: nowrap; font-weight: 600;">
+              <i class="fas fa-cog"></i> Storage Setup Guide
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th style="width: 85px; text-align: center;">Order</th>
+                  <th style="width: 140px;">Slide Preview</th>
+                  <th>Slide Title &amp; Description</th>
+                  <th>Badge / Theme</th>
+                  <th>Action Button</th>
+                  <th style="text-align: center;">Status</th>
+                  <th style="width: 130px; text-align: center;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminSlidesTableBody">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -395,6 +464,197 @@
             Save Product
           </button>
         </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL: ADD / EDIT HOMEPAGE SLIDE
+       ======================================================================== -->
+  <div class="modal-overlay" id="adminSlideModal">
+    <div class="modal-container" style="max-width: 650px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="adminSlideModalTitle">
+          <i class="fas fa-images" style="color: var(--admin-accent); margin-right: 0.5rem;"></i> Add Homepage Slide
+        </h3>
+        <button class="modal-close-btn admin-modal-close" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="adminSlideForm" novalidate>
+          <!-- Image Upload / Preview Area -->
+          <div class="form-group">
+            <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+              <span>Slide Banner Image <span class="req">*</span></span>
+              <span style="font-size: 0.75rem; color: var(--admin-accent); font-weight: normal;">JPEG, PNG, WebP (Max 5MB)</span>
+            </label>
+
+            <!-- Dropzone / Picker -->
+            <div id="slideDropzone" style="border: 2px dashed rgba(0, 210, 255, 0.35); border-radius: 10px; padding: 1.5rem; text-align: center; cursor: pointer; background: rgba(0, 210, 255, 0.04); transition: all 0.2s ease;">
+              <input type="file" id="modalSlideImageFile" accept="image/jpeg,image/png,image/webp" style="display: none;">
+              <i class="fas fa-cloud-upload-alt" style="font-size: 2.2rem; color: var(--admin-accent); margin-bottom: 0.5rem; display: block;"></i>
+              <strong style="color: #FFFFFF; font-size: 0.95rem;">Choose an image from your computer or phone</strong>
+              <p style="color: var(--admin-text-muted); font-size: 0.8rem; margin-top: 0.25rem;">
+                Tap or click here to upload. High-definition landscape (1920×800 or 1200×600) works best.
+              </p>
+            </div>
+
+            <!-- Live Image Preview Container -->
+            <div id="slidePreviewContainer" style="display: none; margin-top: 0.75rem; position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--admin-border); background: #000;">
+              <img id="slidePreviewImg" src="" alt="Slide Preview" style="width: 100%; height: 200px; object-fit: cover; display: block;">
+              <div style="position: absolute; bottom: 8px; right: 8px; display: flex; gap: 0.4rem;">
+                <button type="button" id="btnChangeSlideImage" class="btn-sidebar-action" style="background: rgba(13, 27, 47, 0.85); border: 1px solid var(--admin-accent); color: #FFFFFF; padding: 4px 10px; font-size: 0.78rem; border-radius: 6px; cursor: pointer;">
+                  <i class="fas fa-sync-alt"></i> Replace Image
+                </button>
+              </div>
+            </div>
+            <input type="hidden" id="modalSlideCurrentImageUrl">
+          </div>
+
+          <!-- Slide Title -->
+          <div class="form-group">
+            <label class="form-label" for="modalSlideTitle">Slide Title / Heading <span class="req">*</span></label>
+            <input type="text" id="modalSlideTitle" class="form-control" placeholder="e.g. Power Backup You Can Trust" required>
+          </div>
+
+          <!-- Slide Subtitle / Description -->
+          <div class="form-group">
+            <label class="form-label" for="modalSlideSubtitle">Subtitle / Description</label>
+            <textarea id="modalSlideSubtitle" class="form-control" rows="2" placeholder="e.g. Quality batteries and inverters for your home, shop and business."></textarea>
+          </div>
+
+          <!-- Badge & Color Row -->
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="modalSlideBadgeText">Badge / Category Pill</label>
+              <input type="text" id="modalSlideBadgeText" class="form-control" placeholder="e.g. Inverters & Batteries">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="modalSlideBadgeIcon">Badge Icon</label>
+              <select id="modalSlideBadgeIcon" class="form-control">
+                <option value="fas fa-bolt">⚡ Bolt (Inverters / Batteries)</option>
+                <option value="fas fa-sun">☀️ Sun (Solar Energy)</option>
+                <option value="fas fa-wrench">🔧 Wrench (Repair / Diagnostics)</option>
+                <option value="fas fa-print">🖨️ Printer (Photocopy / Utility)</option>
+                <option value="fas fa-battery-full">🔋 Battery (Automotive / 2W)</option>
+                <option value="fas fa-shield-alt">🛡️ Shield (Warranty / Quality)</option>
+                <option value="fas fa-star">⭐ Star (Special Highlight)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="modalSlideBadgeColor">Badge Color Theme</label>
+              <select id="modalSlideBadgeColor" class="form-control">
+                <option value="default">Electric Cyan / Blue</option>
+                <option value="solar">Solar Gold / Green</option>
+                <option value="amber">Diagnostic Amber</option>
+                <option value="purple">Utility Purple</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Primary Button Row -->
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="modalSlideBtnText">Primary Button Text</label>
+              <input type="text" id="modalSlideBtnText" class="form-control" placeholder="e.g. Explore Products">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="modalSlideBtnLink">Primary Button Link</label>
+              <input type="text" id="modalSlideBtnLink" class="form-control" placeholder="e.g. #products or #solar">
+            </div>
+          </div>
+
+          <!-- Secondary Button Row -->
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="modalSlideSecBtnText">Secondary Button Text (Optional)</label>
+              <input type="text" id="modalSlideSecBtnText" class="form-control" placeholder="e.g. Call Now">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="modalSlideSecBtnLink">Secondary Button Link (Optional)</label>
+              <input type="text" id="modalSlideSecBtnLink" class="form-control" placeholder="e.g. tel:+916386850612">
+            </div>
+          </div>
+
+          <!-- Order & Visibility Row -->
+          <div class="form-row" style="align-items: center; margin-top: 0.5rem;">
+            <div class="form-group" style="max-width: 150px;">
+              <label class="form-label" for="modalSlideOrder">Display Order</label>
+              <input type="number" id="modalSlideOrder" class="form-control" min="1" value="1" required>
+            </div>
+
+            <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 1.25rem;">
+              <input type="checkbox" id="modalSlideActive" checked style="width: 18px; height: 18px; cursor: pointer;">
+              <label for="modalSlideActive" style="cursor: pointer; font-size: 0.88rem; color: #FFFFFF;">
+                Enable this slide immediately on public homepage
+              </label>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
+            <button type="submit" id="btnSubmitSlide" class="btn-primary" style="flex: 2; justify-content: center;">
+              <i class="fas fa-save"></i> Save Slide
+            </button>
+            <button type="button" class="btn-sidebar-action admin-modal-close" style="flex: 1; justify-content: center; border: 1px solid var(--admin-border-subtle); color: #CBD5E1;">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL: STORAGE CONFIGURATION GUIDE
+       ======================================================================== -->
+  <div class="modal-overlay" id="adminStorageModal">
+    <div class="modal-container" style="max-width: 580px;">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="fas fa-cloud" style="color: var(--admin-accent); margin-right: 0.5rem;"></i> Image Storage &amp; Persistence Guide
+        </h3>
+        <button class="modal-close-btn admin-modal-close">&times;</button>
+      </div>
+      <div class="modal-body" style="font-size: 0.9rem; line-height: 1.6; color: var(--admin-text-main);">
+        <p style="margin-bottom: 1rem;">
+          To ensure slider images uploaded from your phone or computer remain permanently stored across server updates and redeployments, our system supports both <strong>Cloudinary Cloud Storage</strong> and <strong>Railway Persistent Volumes</strong>.
+        </p>
+
+        <div style="background: rgba(0, 210, 255, 0.08); border: 1px solid rgba(0, 210, 255, 0.25); border-radius: 8px; padding: 1rem; margin-bottom: 1.25rem;">
+          <strong style="color: var(--admin-accent); display: block; margin-bottom: 0.35rem;">
+            <i class="fas fa-check-circle"></i> Option 1: Cloudinary (Recommended for Railway - Free)
+          </strong>
+          <p style="color: #E2E8F0; font-size: 0.85rem; margin-bottom: 0.6rem;">
+            1. Create a free account at <a href="https://cloudinary.com" target="_blank" style="color: var(--admin-accent);">cloudinary.com</a>.<br>
+            2. Copy your <strong>Cloud Name</strong>, <strong>API Key</strong>, and <strong>API Secret</strong> from your dashboard.<br>
+            3. Add these variables in Railway &rarr; Your Project &rarr; Variables:
+          </p>
+          <pre style="background: #050B14; padding: 0.65rem; border-radius: 6px; font-size: 0.8rem; color: #38BDF8; overflow-x: auto; font-family: monospace;">CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret</pre>
+        </div>
+
+        <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid var(--admin-border-subtle); border-radius: 8px; padding: 1rem; margin-bottom: 1.25rem;">
+          <strong style="color: #FFFFFF; display: block; margin-bottom: 0.35rem;">
+            <i class="fas fa-hdd"></i> Option 2: Railway Persistent Volume
+          </strong>
+          <p style="color: var(--admin-text-muted); font-size: 0.85rem;">
+            If you have attached a persistent volume to your Railway service (mounted at <code>/database</code>), set:
+          </p>
+          <pre style="background: #050B14; padding: 0.65rem; border-radius: 6px; font-size: 0.8rem; color: #CBD5E1; overflow-x: auto; font-family: monospace; margin-top: 0.4rem;">UPLOADS_PATH=/database/uploads/slider</pre>
+        </div>
+
+        <p style="font-size: 0.82rem; color: var(--admin-text-muted);">
+          Current status: <span id="storageModalCurrentStatus" style="font-weight: 600; color: #FFF;">Checking...</span>
+        </p>
+
+        <button type="button" class="btn-primary admin-modal-close" style="width: 100%; margin-top: 1.25rem; justify-content: center;">
+          Understood / Close Guide
+        </button>
       </div>
     </div>
   </div>

@@ -91,7 +91,9 @@ exports.getDashboardStats = (req, res) => {
     totalEnquiries: 'SELECT COUNT(*) as count FROM enquiries',
     newEnquiries: "SELECT COUNT(*) as count FROM enquiries WHERE status = 'NEW'",
     contactedEnquiries: "SELECT COUNT(*) as count FROM enquiries WHERE status = 'CONTACTED'",
-    completedEnquiries: "SELECT COUNT(*) as count FROM enquiries WHERE status = 'COMPLETED'"
+    completedEnquiries: "SELECT COUNT(*) as count FROM enquiries WHERE status = 'COMPLETED'",
+    totalSlides: 'SELECT COUNT(*) as count FROM slider_slides',
+    activeSlides: 'SELECT COUNT(*) as count FROM slider_slides WHERE is_active = 1'
   };
 
   const results = {};

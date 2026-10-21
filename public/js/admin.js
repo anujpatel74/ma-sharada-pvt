@@ -46,10 +46,32 @@ document.addEventListener('DOMContentLoaded', () => {
   // Settings Tab
   const settingsForm = document.getElementById('adminSettingsForm');
 
+  // Slider Tab
+  const slidesTableBody = document.getElementById('adminSlidesTableBody');
+  const addSlideBtn = document.getElementById('openAddSlideModalBtn');
+  const slideModal = document.getElementById('adminSlideModal');
+  const slideForm = document.getElementById('adminSlideForm');
+  const slideModalTitle = document.getElementById('adminSlideModalTitle');
+  const slideDropzone = document.getElementById('slideDropzone');
+  const slideImageFileInput = document.getElementById('modalSlideImageFile');
+  const slidePreviewContainer = document.getElementById('slidePreviewContainer');
+  const slidePreviewImg = document.getElementById('slidePreviewImg');
+  const btnChangeSlideImage = document.getElementById('btnChangeSlideImage');
+  const modalSlideCurrentImageUrl = document.getElementById('modalSlideCurrentImageUrl');
+  const adminStorageBadge = document.getElementById('adminStorageBadge');
+  const storageBannerText = document.getElementById('storageBannerText');
+  const storageBannerIcon = document.getElementById('storageBannerIcon');
+  const btnOpenStorageModal = document.getElementById('btnOpenStorageModal');
+  const adminStorageModal = document.getElementById('adminStorageModal');
+  const storageModalCurrentStatus = document.getElementById('storageModalCurrentStatus');
+
   // State
   let productsList = [];
   let enquiriesList = [];
+  let slidesList = [];
   let editingProductId = null;
+  let editingSlideId = null;
+  let selectedSlideFile = null;
 
   // Initialize
   checkAuth();
@@ -89,6 +111,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (dashboardView) dashboardView.style.display = 'flex';
     if (adminUserDisplay) adminUserDisplay.textContent = adminUser.name || adminUser.email;
     loadDashboardStats();
+    loadSlides();
+    loadStorageStatus();
     loadProducts();
     loadEnquiries();
     loadSettings();
@@ -182,6 +206,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('statInStockProducts').textContent = d.inStockProducts || 0;
         document.getElementById('statTotalEnquiries').textContent = d.totalEnquiries || 0;
         document.getElementById('statNewEnquiries').textContent = d.newEnquiries || 0;
+        const statActive = document.getElementById('statActiveSlides');
+        if (statActive) statActive.textContent = d.activeSlides || 0;
       }
     } catch (err) {
       console.error('Stats loading error:', err);
@@ -202,11 +228,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Format image path safely for both http://, /public/admin.html, and file:///
+  // Format image path safely for both http://, /public/admin.html, /uploads/, and file:///
   function formatImagePath(path) {
-    if (!path) return 'images/products/amaron_car_battery.jpg';
+    if (!path) return 'images/hero/slider_battery_inverter.png';
     if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:')) {
       return path;
+    }
+    if (path.startsWith('/uploads/')) {
+      return API_BASE ? (API_BASE + path) : path;
     }
     return path.startsWith('/') ? path.substring(1) : path;
   }
@@ -687,6 +716,432 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       } catch (err) {
         showAdminToast('Settings saved and updated across website!', 'success');
+      }
+    });
+  }
+
+  // ==========================================================================
+  // 8.5 HOMEPAGE SLIDER MANAGEMENT
+  // ==========================================================================
+  async function loadSlides() {
+    try {
+      const res = await fetch(API_BASE + '/api/admin/slides', {
+        headers: { 'Authorization': `Bearer ${authToken}` }
+      });
+      const json = await res.json();
+      if (json.success && json.data) {
+        slidesList = json.data;
+        renderSlidesTable(slidesList);
+      }
+    } catch (err) {
+      console.error('Error fetching admin slides:', err);
+    }
+  }
+
+  async function loadStorageStatus() {
+    try {
+      const res = await fetch(API_BASE + '/api/admin/slides/storage-status', {
+        headers: { 'Authorization': `Bearer ${authToken}` }
+      });
+      const json = await res.json();
+      if (json.success && json.data) {
+        const d = json.data;
+        if (adminStorageBadge) {
+          if (d.cloudConfigured) {
+            adminStorageBadge.className = 'badge-status-pill COMPLETED';
+            adminStorageBadge.innerHTML = '<i class="fas fa-cloud"></i> Storage: Cloudinary (Cloud Persistent)';
+          } else {
+            adminStorageBadge.className = 'badge-status-pill CONTACTED';
+            adminStorageBadge.innerHTML = '<i class="fas fa-hdd"></i> Storage: Local Server Disk';
+          }
+        }
+        if (storageBannerText) {
+          storageBannerText.textContent = d.message;
+        }
+        if (storageBannerIcon) {
+          storageBannerIcon.className = d.cloudConfigured ? 'fas fa-cloud' : 'fas fa-hdd';
+        }
+        if (storageModalCurrentStatus) {
+          storageModalCurrentStatus.textContent = d.cloudConfigured
+            ? 'Cloudinary Persistent Storage is active. Uploads are stored permanently.'
+            : 'Local server disk is currently active. For cloud persistence on Railway, see the steps below.';
+        }
+      }
+    } catch (err) {
+      console.error('Storage status error:', err);
+    }
+  }
+
+  if (adminStorageBadge) {
+    adminStorageBadge.addEventListener('click', () => openAdminModal(adminStorageModal));
+  }
+  if (btnOpenStorageModal) {
+    btnOpenStorageModal.addEventListener('click', () => openAdminModal(adminStorageModal));
+  }
+
+  function renderSlidesTable(slides) {
+    if (!slidesTableBody) return;
+
+    if (!slides || slides.length === 0) {
+      slidesTableBody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--admin-text-muted); padding: 2rem;">No homepage slides found. Click "+ Upload New Slide" to add your first banner.</td></tr>`;
+      return;
+    }
+
+    slidesTableBody.innerHTML = slides.map((s, idx) => {
+      const isFirst = idx === 0;
+      const isLast = idx === slides.length - 1;
+      const imgPath = formatImagePath(s.image_url);
+      const isEnabled = Boolean(s.is_active);
+
+      return `
+        <tr>
+          <!-- Display Order with Up / Down Arrows -->
+          <td style="text-align: center;">
+            <div class="slider-order-controls">
+              <button class="btn-order-arrow" title="Move Slide Up" onclick="moveSlide(${idx}, -1)" ${isFirst ? 'disabled' : ''}>
+                <i class="fas fa-chevron-up"></i>
+              </button>
+              <span class="slide-order-badge">#${s.display_order}</span>
+              <button class="btn-order-arrow" title="Move Slide Down" onclick="moveSlide(${idx}, 1)" ${isLast ? 'disabled' : ''}>
+                <i class="fas fa-chevron-down"></i>
+              </button>
+            </div>
+          </td>
+
+          <!-- Slide Image Preview Thumbnail -->
+          <td>
+            <div class="slider-thumb-wrapper" title="Click to edit slide" onclick="openEditSlide(${s.id})">
+              <img src="${escapeHTML(imgPath)}" class="slider-thumb-img" alt="${escapeHTML(s.title)}" onerror="this.onerror=null; this.src='images/real_photos/shop_real_interior.jpg'">
+            </div>
+          </td>
+
+          <!-- Title & Subtitle -->
+          <td>
+            <strong style="color: #FFFFFF; font-size: 0.95rem; display: block; margin-bottom: 2px;">${escapeHTML(s.title)}</strong>
+            <small style="color: var(--admin-text-muted); display: block; max-width: 380px; line-height: 1.4;">${escapeHTML(s.subtitle || 'No description provided')}</small>
+          </td>
+
+          <!-- Badge Pill -->
+          <td>
+            ${s.badge_text ? `
+              <span class="badge-color-pill ${escapeHTML(s.badge_color || 'default')}">
+                <i class="${escapeHTML(s.badge_icon || 'fas fa-bolt')}"></i> ${escapeHTML(s.badge_text)}
+              </span>
+            ` : '<span style="color: var(--admin-text-muted); font-size: 0.8rem;">—</span>'}
+          </td>
+
+          <!-- Buttons -->
+          <td>
+            <div style="font-size: 0.82rem;">
+              ${s.button_text ? `<div style="color: var(--admin-accent); font-weight: 600;"><i class="fas fa-link"></i> ${escapeHTML(s.button_text)} &rarr; <span style="color: var(--admin-text-muted); font-weight: normal;">${escapeHTML(s.button_link || '')}</span></div>` : ''}
+              ${s.secondary_button_text ? `<div style="color: #4ADE80; font-size: 0.78rem; margin-top: 2px;"><i class="fas fa-phone-alt"></i> ${escapeHTML(s.secondary_button_text)}</div>` : ''}
+              ${!s.button_text && !s.secondary_button_text ? '<span style="color: var(--admin-text-muted);">None</span>' : ''}
+            </div>
+          </td>
+
+          <!-- Visibility Toggle Pill -->
+          <td style="text-align: center;">
+            <button class="badge-status-pill ${isEnabled ? 'COMPLETED' : 'NEW'}" style="cursor: pointer; border: none; font-size: 0.8rem; padding: 0.35rem 0.75rem;" title="Click to toggle visibility on public homepage" onclick="toggleSlideStatus(${s.id}, ${isEnabled ? 0 : 1})">
+              ${isEnabled ? '<i class="fas fa-eye"></i> Enabled' : '<i class="fas fa-eye-slash"></i> Disabled'}
+            </button>
+          </td>
+
+          <!-- Actions -->
+          <td style="text-align: center;">
+            <div class="table-actions" style="justify-content: center;">
+              <button class="btn-icon-action" title="Edit Slide" onclick="openEditSlide(${s.id})">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="btn-icon-action delete" title="Delete Slide" onclick="deleteSlide(${s.id})">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // Slide Reordering (Move Up / Down)
+  window.moveSlide = async function(index, direction) {
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= slidesList.length) return;
+
+    // Swap items in memory
+    const temp = slidesList[index];
+    slidesList[index] = slidesList[targetIndex];
+    slidesList[targetIndex] = temp;
+
+    // Re-index display_order sequentially
+    slidesList.forEach((s, idx) => {
+      s.display_order = idx + 1;
+    });
+
+    // Instant optimistic render
+    renderSlidesTable(slidesList);
+
+    const orderPayload = slidesList.map(s => ({
+      id: s.id,
+      display_order: s.display_order
+    }));
+
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/slides/reorder`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({ order: orderPayload })
+      });
+
+      if (res.ok) {
+        showAdminToast('Slide display order updated.', 'success');
+      } else {
+        showAdminToast('Server could not save new order.', 'error');
+        loadSlides();
+      }
+    } catch (err) {
+      console.error('Reorder error:', err);
+      showAdminToast('Network error saving slide order.', 'error');
+      loadSlides();
+    }
+  };
+
+  // Toggle Slide Status (Enable / Disable)
+  window.toggleSlideStatus = async function(id, newStatus) {
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/slides/${id}/toggle`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({ is_active: newStatus })
+      });
+
+      const json = await res.json();
+      if (res.ok && json.success) {
+        showAdminToast(`Slide ${newStatus === 1 ? 'enabled' : 'disabled'} successfully.`, 'success');
+        loadSlides();
+        loadDashboardStats();
+      } else {
+        showAdminToast(json.message || 'Failed to toggle slide status.', 'error');
+      }
+    } catch (err) {
+      console.error('Toggle status error:', err);
+      showAdminToast('Network error updating slide status.', 'error');
+    }
+  };
+
+  // Delete Slide
+  window.deleteSlide = async function(id) {
+    const slide = slidesList.find(s => s.id === id);
+    const title = slide ? slide.title : 'this slide';
+    if (!confirm(`Are you sure you want to delete "${title}"?\nThis slide will be permanently removed from the public website.`)) return;
+
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/slides/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${authToken}` }
+      });
+      const json = await res.json();
+      if (res.ok && json.success) {
+        showAdminToast('Slide deleted successfully.', 'success');
+        loadSlides();
+        loadDashboardStats();
+      } else {
+        showAdminToast(json.message || 'Failed to delete slide.', 'error');
+      }
+    } catch (err) {
+      console.error('Delete slide error:', err);
+      showAdminToast('Network error deleting slide.', 'error');
+    }
+  };
+
+  // File Upload Handling & Live Image Preview
+  function handleSlideFileSelection(file) {
+    if (!file) return;
+
+    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+    if (!allowed.includes(file.type.toLowerCase())) {
+      showAdminToast('Invalid format. Only authentic JPEG, PNG, and WebP images are supported.', 'error');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      showAdminToast('Image exceeds 5MB size limit. Please choose a smaller image.', 'error');
+      return;
+    }
+
+    selectedSlideFile = file;
+
+    // Show preview immediately using FileReader
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      slidePreviewImg.src = e.target.result;
+      slidePreviewContainer.style.display = 'block';
+      slideDropzone.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  if (slideDropzone) {
+    slideDropzone.addEventListener('click', () => {
+      if (slideImageFileInput) slideImageFileInput.click();
+    });
+
+    slideDropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      slideDropzone.classList.add('dragover');
+    });
+
+    slideDropzone.addEventListener('dragleave', () => {
+      slideDropzone.classList.remove('dragover');
+    });
+
+    slideDropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      slideDropzone.classList.remove('dragover');
+      if (e.dataTransfer && e.dataTransfer.files.length > 0) {
+        handleSlideFileSelection(e.dataTransfer.files[0]);
+      }
+    });
+  }
+
+  if (slideImageFileInput) {
+    slideImageFileInput.addEventListener('change', () => {
+      if (slideImageFileInput.files && slideImageFileInput.files.length > 0) {
+        handleSlideFileSelection(slideImageFileInput.files[0]);
+      }
+    });
+  }
+
+  if (btnChangeSlideImage) {
+    btnChangeSlideImage.addEventListener('click', () => {
+      if (slideImageFileInput) slideImageFileInput.click();
+    });
+  }
+
+  // Open Add Slide Modal
+  if (addSlideBtn) {
+    addSlideBtn.addEventListener('click', () => {
+      editingSlideId = null;
+      selectedSlideFile = null;
+      slideForm.reset();
+      slideModalTitle.innerHTML = '<i class="fas fa-plus-circle" style="color: var(--admin-accent);"></i> Upload New Homepage Slide';
+      modalSlideCurrentImageUrl.value = '';
+      slidePreviewImg.src = '';
+      slidePreviewContainer.style.display = 'none';
+      slideDropzone.style.display = 'block';
+      document.getElementById('modalSlideOrder').value = slidesList.length + 1;
+      document.getElementById('modalSlideActive').checked = true;
+      openAdminModal(slideModal);
+    });
+  }
+
+  // Open Edit Slide Modal
+  window.openEditSlide = function(id) {
+    const slide = slidesList.find(s => s.id === id);
+    if (!slide) return;
+
+    editingSlideId = id;
+    selectedSlideFile = null;
+    slideForm.reset();
+    slideModalTitle.innerHTML = '<i class="fas fa-edit" style="color: var(--admin-accent);"></i> Edit Homepage Slide';
+
+    document.getElementById('modalSlideTitle').value = slide.title || '';
+    document.getElementById('modalSlideSubtitle').value = slide.subtitle || '';
+    document.getElementById('modalSlideBadgeText').value = slide.badge_text || '';
+    document.getElementById('modalSlideBadgeIcon').value = slide.badge_icon || 'fas fa-bolt';
+    document.getElementById('modalSlideBadgeColor').value = slide.badge_color || 'default';
+    document.getElementById('modalSlideBtnText').value = slide.button_text || '';
+    document.getElementById('modalSlideBtnLink').value = slide.button_link || '';
+    document.getElementById('modalSlideSecBtnText').value = slide.secondary_button_text || '';
+    document.getElementById('modalSlideSecBtnLink').value = slide.secondary_button_link || '';
+    document.getElementById('modalSlideOrder').value = slide.display_order || 1;
+    document.getElementById('modalSlideActive').checked = Boolean(slide.is_active);
+
+    modalSlideCurrentImageUrl.value = slide.image_url || '';
+    if (slide.image_url) {
+      slidePreviewImg.src = formatImagePath(slide.image_url);
+      slidePreviewContainer.style.display = 'block';
+      slideDropzone.style.display = 'none';
+    } else {
+      slidePreviewContainer.style.display = 'none';
+      slideDropzone.style.display = 'block';
+    }
+
+    openAdminModal(slideModal);
+  };
+
+  // Submit Slide Form
+  if (slideForm) {
+    slideForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const title = document.getElementById('modalSlideTitle').value.trim();
+      if (!title) {
+        showAdminToast('Slide title is required.', 'error');
+        return;
+      }
+
+      if (!editingSlideId && !selectedSlideFile && !modalSlideCurrentImageUrl.value) {
+        showAdminToast('Please upload an image for the slide.', 'error');
+        return;
+      }
+
+      const submitBtn = document.getElementById('btnSubmitSlide');
+      const origText = submitBtn.innerHTML;
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading &amp; Saving...';
+
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('subtitle', document.getElementById('modalSlideSubtitle').value.trim());
+      formData.append('badge_text', document.getElementById('modalSlideBadgeText').value.trim());
+      formData.append('badge_icon', document.getElementById('modalSlideBadgeIcon').value);
+      formData.append('badge_color', document.getElementById('modalSlideBadgeColor').value);
+      formData.append('button_text', document.getElementById('modalSlideBtnText').value.trim());
+      formData.append('button_link', document.getElementById('modalSlideBtnLink').value.trim());
+      formData.append('secondary_button_text', document.getElementById('modalSlideSecBtnText').value.trim());
+      formData.append('secondary_button_link', document.getElementById('modalSlideSecBtnLink').value.trim());
+      formData.append('display_order', document.getElementById('modalSlideOrder').value);
+      formData.append('is_active', document.getElementById('modalSlideActive').checked ? 1 : 0);
+
+      if (selectedSlideFile) {
+        formData.append('image', selectedSlideFile);
+      } else if (modalSlideCurrentImageUrl.value) {
+        formData.append('image_url', modalSlideCurrentImageUrl.value);
+      }
+
+      try {
+        const url = editingSlideId ? `${API_BASE}/api/admin/slides/${editingSlideId}` : `${API_BASE}/api/admin/slides`;
+        const method = editingSlideId ? 'PUT' : 'POST';
+
+        const res = await fetch(url, {
+          method,
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: formData
+        });
+
+        const json = await res.json();
+        if (res.ok && json.success) {
+          showAdminToast(editingSlideId ? 'Slide updated successfully!' : 'New slide published to homepage!', 'success');
+          closeAdminModal(slideModal);
+          loadSlides();
+          loadDashboardStats();
+        } else {
+          showAdminToast(json.message || 'Failed to save slide.', 'error');
+        }
+      } catch (err) {
+        console.error('Slide save error:', err);
+        showAdminToast('Network error uploading slide.', 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = origText;
       }
     });
   }

@@ -10,4 +10,5 @@ database/*.db
 *.db-shm
 .DS_Store
 Thumbs.db
-
+public/uploads/*
+!public/uploads/.gitkeep

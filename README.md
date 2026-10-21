@@ -49,11 +49,44 @@ Offerings: **Battery • Inverter • Solar • Electrical Products • Repair &
 6. **Dedicated Solar Section**:
    - Solar Panels, Solar Batteries, Solar Inverter Solutions, Solar Accessories.
 
-7. **Discreet Admin Console (Footer ONLY)**:
+7. **Production-Ready Homepage Slider Management**:
+   - Dynamic slide rendering on the public storefront (`GET /api/slides`) with rock-solid fallback.
+   - Admin management panel: **"Manage Homepage Slider"** (`/admin`).
+   - Image upload from mobile or desktop with live preview before saving.
+   - Edit slide titles, descriptions, badge pills, button labels, and target links.
+   - One-click visibility toggle (Enable / Disable) and instant Up/Down display reordering.
+   - Immediate live reflection without redeployment or Git commits.
+   - **Persistent Storage**: Integrates with **Cloudinary** (recommended for Railway) or persistent volume mounts (`UPLOADS_PATH`).
+
+8. **Discreet Admin Console (Footer ONLY)**:
    - **NO ADMIN LOGIN IN THE NAVBAR**.
-   - Accessible only through the tiny, subtle `Admin Login` link at the very bottom of the footer or direct `/admin` URL.
+   - Accessible only through the subtle `Admin Login` link in the footer or direct `/admin` URL.
    - Admin credentials configured in `.env` (Default: `admin@maasharada.com` / `MaaSharada@2026`).
-   - Admin features: KPI dashboard, Add / Edit / Delete products, Toggle In-Stock status, View & manage enquiries (`NEW`, `CONTACTED`, `COMPLETED`), configure global shop settings.
+   - Admin features: KPI metrics, Homepage Slider Management, Product Catalog CRUD, In-Stock toggles, Bookings management (`NEW`, `CONTACTED`, `COMPLETED`), and Shop Settings.
+
+---
+
+## ☁️ Persistent Image Storage Configuration
+
+On hosting platforms like Railway, container filesystems are ephemeral (runtime file uploads are wiped upon redeploy) unless persistent storage is configured. Our slider system supports two production options:
+
+### Option 1: Cloudinary (Recommended for Railway - Free Tier)
+1. Register a free account at [Cloudinary](https://cloudinary.com).
+2. Retrieve your **Cloud Name**, **API Key**, and **API Secret** from your Cloudinary console.
+3. Add the following variables to Railway (or `.env`):
+   ```env
+   CLOUDINARY_CLOUD_NAME=your_cloud_name
+   CLOUDINARY_API_KEY=your_api_key
+   CLOUDINARY_API_SECRET=your_api_secret
+   ```
+When configured, all uploaded slider images stream directly to Cloudinary and persist permanently in the cloud.
+
+### Option 2: Railway Persistent Volume
+If you attach a Persistent Volume to your Railway deployment (e.g., mounted at `/database`):
+```env
+DATABASE_PATH=/database/shop.db
+UPLOADS_PATH=/database/uploads/slider
+```
 
 ---
 
@@ -62,29 +95,27 @@ Offerings: **Battery • Inverter • Solar • Electrical Products • Repair &
 ```
 MAA-SHARDA PVT/
 ├── database/
-│   ├── database.js          # SQLite setup, tables & automated seeders
+│   ├── database.js          # SQLite setup, tables (slider_slides, products, etc.) & automated seeders
 │   └── shop.db              # SQLite database file
 ├── server/
 │   ├── server.js            # Express app, security, static routing & error handling
-│   ├── routes/              # Express API routers (products, enquiries, auth, settings)
-│   ├── controllers/         # Business logic handlers
+│   ├── routes/              # Express API routers (slider, products, enquiries, auth, settings)
+│   ├── controllers/         # Handlers (sliderController, productController, etc.)
+│   ├── services/            # Storage service (Cloudinary / Volume disk adapter)
 │   └── middleware/          # JWT auth & enquiry validation
 ├── public/
-│   ├── index.html           # Main customer-facing storefront
-│   ├── admin.html           # Private Admin Command Center
+│   ├── index.html           # Main storefront with dynamic hero slider & fallback
+│   ├── admin.html           # Admin Console with "Manage Homepage Slider"
 │   ├── css/
-│   │   ├── style.css        # Core design system & responsive styling
-│   │   └── admin.css        # Admin dashboard styling
+│   │   ├── style.css        # Storefront design system & responsive hero slider
+│   │   └── admin.css        # Admin console styling & slider manager controls
 │   ├── js/
-│   │   ├── app.js           # Client search, filters, modals, enquiries
-│   │   └── admin.js         # Admin authentication, CRUD, status management
-│   └── images/
-│       ├── products/        # High-res real battery & solar product images
-│       ├── services/        # Battery charging bench & repair photography
-│       ├── hero/            # Hero 3D energy showcase & Goldstar banners
-│       └── brands/          # Vector SVG logos (Amaron, Exide, Luminous, Goldstar)
-├── .env                     # Private environment secrets
-├── .env.example             # Template for public deployment
+│   │   ├── app.js           # Dynamic slider loader, catalogue filters, booking modals
+│   │   └── admin.js         # Slider CRUD, live image preview, reordering, status toggles
+│   ├── uploads/slider/      # Local/volume persistent uploads directory
+│   └── images/              # High-resolution product, brand & default hero photography
+├── .env                     # Private environment configuration
+├── .env.example             # Template with persistent storage variables
 ├── .gitignore
 ├── package.json
 └── README.md

@@ -90,6 +90,29 @@ function initDatabase() {
       availability TEXT DEFAULT 'Available'
     )`);
 
+    // 6. Slider Slides Table
+    db.run(`CREATE TABLE IF NOT EXISTS slider_slides (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      subtitle TEXT,
+      badge_text TEXT,
+      badge_icon TEXT DEFAULT 'fas fa-bolt',
+      badge_color TEXT DEFAULT 'default',
+      button_text TEXT DEFAULT 'Explore Products',
+      button_link TEXT DEFAULT '#products',
+      secondary_button_text TEXT,
+      secondary_button_link TEXT,
+      image_url TEXT NOT NULL,
+      image_public_id TEXT,
+      storage_type TEXT DEFAULT 'local',
+      display_order INTEGER DEFAULT 0,
+      is_active INTEGER DEFAULT 1,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`);
+
+    db.run(`CREATE INDEX IF NOT EXISTS idx_slider_slides_order ON slider_slides(display_order, is_active)`);
+
     seedDefaultData();
   });
 }
@@ -364,6 +387,85 @@ function seedDefaultData() {
       services.forEach(s => stmt.run(s.title, s.icon, s.category, s.description, 'Available'));
       stmt.finalize();
       console.log('Seeded services successfully.');
+    }
+  });
+
+  // Check and seed slider slides
+  db.get(`SELECT COUNT(*) as count FROM slider_slides`, (err, row) => {
+    if (err) return console.error('Slider count error:', err);
+    if (row && row.count === 0) {
+      const defaultSlides = [
+        {
+          title: 'Power Backup You Can Trust',
+          subtitle: 'Quality batteries and inverters for your home, shop and business.',
+          badge_text: 'Inverters & Batteries',
+          badge_icon: 'fas fa-bolt',
+          badge_color: 'default',
+          button_text: 'Explore Products',
+          button_link: '#products',
+          secondary_button_text: 'Call Now',
+          secondary_button_link: 'tel:+916386850612',
+          image_url: 'images/hero/slider_battery_inverter.png',
+          display_order: 1,
+          is_active: 1
+        },
+        {
+          title: 'Switch to Solar Energy',
+          subtitle: 'Explore solar solutions for a brighter and energy-efficient future.',
+          badge_text: 'Solar Energy Solutions',
+          badge_icon: 'fas fa-sun',
+          badge_color: 'solar',
+          button_text: 'Enquire Now',
+          button_link: '#solar',
+          secondary_button_text: '',
+          secondary_button_link: '',
+          image_url: 'images/hero/slider_solar_energy.jpg',
+          display_order: 2,
+          is_active: 1
+        },
+        {
+          title: 'Battery Care & Reliable Service',
+          subtitle: 'Get assistance with battery testing, charging and repair services.',
+          badge_text: 'Diagnostic & Bench Service',
+          badge_icon: 'fas fa-wrench',
+          badge_color: 'amber',
+          button_text: 'Contact Us',
+          button_link: '#contact',
+          secondary_button_text: '',
+          secondary_button_link: '',
+          image_url: 'images/hero/slider_battery_repair.jpg',
+          display_order: 3,
+          is_active: 1
+        },
+        {
+          title: 'Your Everyday Business Needs',
+          subtitle: 'Photocopy and lamination services at MAA SHARADA ENTERPRISES.',
+          badge_text: 'Shop Utility Services',
+          badge_icon: 'fas fa-print',
+          badge_color: 'purple',
+          button_text: 'Visit Our Shop',
+          button_link: '#contact',
+          secondary_button_text: '',
+          secondary_button_link: '',
+          image_url: 'images/hero/slider_photocopy_lamination.jpg',
+          display_order: 4,
+          is_active: 1
+        }
+      ];
+
+      const stmt = db.prepare(`INSERT INTO slider_slides 
+        (title, subtitle, badge_text, badge_icon, badge_color, button_text, button_link, secondary_button_text, secondary_button_link, image_url, display_order, is_active)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+
+      defaultSlides.forEach(s => {
+        stmt.run(
+          s.title, s.subtitle, s.badge_text, s.badge_icon, s.badge_color,
+          s.button_text, s.button_link, s.secondary_button_text, s.secondary_button_link,
+          s.image_url, s.display_order, s.is_active
+        );
+      });
+      stmt.finalize();
+      console.log('Seeded default homepage slider slides successfully.');
     }
   });
 }

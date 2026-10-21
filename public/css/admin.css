@@ -539,3 +539,110 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================================
+   HOMEPAGE SLIDER MANAGEMENT STYLES
+   ========================================================================== */
+.slider-thumb-wrapper {
+  position: relative;
+  width: 130px;
+  height: 72px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--admin-border-subtle);
+  background: #000;
+  cursor: pointer;
+  display: block;
+}
+
+.slider-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.25s ease;
+}
+
+.slider-thumb-wrapper:hover .slider-thumb-img {
+  transform: scale(1.08);
+}
+
+.slider-order-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.btn-order-arrow {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--admin-border-subtle);
+  color: var(--admin-text-main);
+  width: 28px;
+  height: 24px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.72rem;
+  transition: all 0.15s ease;
+}
+
+.btn-order-arrow:hover:not(:disabled) {
+  background: var(--admin-accent);
+  color: #050B14;
+  border-color: var(--admin-accent);
+}
+
+.btn-order-arrow:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+.slide-order-badge {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: var(--admin-accent);
+}
+
+.slide-dropzone.dragover {
+  border-color: var(--admin-accent) !important;
+  background: rgba(0, 210, 255, 0.12) !important;
+}
+
+.badge-color-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  text-transform: capitalize;
+}
+
+.badge-color-pill.default {
+  background: rgba(0, 210, 255, 0.15);
+  color: var(--admin-accent);
+  border: 1px solid rgba(0, 210, 255, 0.3);
+}
+
+.badge-color-pill.solar {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ADE80;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.badge-color-pill.amber {
+  background: rgba(245, 158, 11, 0.15);
+  color: #FBBF24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.badge-color-pill.purple {
+  background: rgba(168, 85, 247, 0.15);
+  color: #C084FC;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
