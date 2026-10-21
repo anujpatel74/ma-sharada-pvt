@@ -19,7 +19,7 @@ not_found_handling = "single-page-application"
 [[d1_databases]]
 binding = "DB"
 database_name = "maa-sharda-db"
-database_id = "local-d1-placeholder"
+database_id = "a11d43a4-12c4-4531-b0bd-3177e2a2141a"
 
 # 3. Default Public Environment Variables
 [vars]
