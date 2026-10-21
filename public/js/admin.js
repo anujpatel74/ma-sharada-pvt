@@ -11,7 +11,7 @@ const API_BASE = (() => {
   // 2. If running on a local development server on a different port (e.g. Live Server on port 5500, or 3000, 5173, etc.)
   const host = window.location.hostname;
   const isLocal = host === 'localhost' || host === '127.0.0.1';
-  if (isLocal && window.location.port !== '5000') {
+  if (isLocal && window.location.port !== '5000' && window.location.port !== '8787') {
     return `http://${host}:5000`;
   }
   // 3. Otherwise (served by Express server on port 5000, production domain, or Cloudflare Pages proxy)
