@@ -13,3 +13,4 @@ Thumbs.db
 public/uploads/*
 !public/uploads/.gitkeep
 .wrangler/
+.dev.vars

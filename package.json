@@ -6,9 +6,10 @@
   "scripts": {
     "start": "node server/server.js",
     "dev": "node server/server.js",
-    "cf:preview": "npx wrangler pages dev public",
-    "cf:deploy": "npx wrangler pages deploy public",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "deploy": "wrangler deploy",
+    "dev:worker": "wrangler dev",
+    "db:export": "node scripts/export_d1.js",
+    "test": "node test/worker.test.mjs"
   },
   "keywords": [],
   "author": "",

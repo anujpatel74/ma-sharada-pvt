@@ -1,10 +1,3 @@
-# ==============================================================================
-# Cloudflare Pages Routing & Redirects configuration
-# ==============================================================================
-
-# 1. Admin Console Direct Routing (Serves admin.html without .html extension)
+# Cloudflare Routing & Redirects
 /admin        /admin.html      200
 /admin/       /admin.html      200
-
-# 2. SPA Fallback for Storefront
-/*            /index.html      200

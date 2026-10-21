@@ -1,6 +1,35 @@
--- ==============================================================================
--- Cloudflare D1 Database Schema for MAA SHARADA ENTERPRISES
--- Run: npx wrangler d1 execute maa-sharda-db --file=./database/schema.sql
+const sqlite3 = require('sqlite3').verbose();
+const path = require('path');
+const fs = require('fs');
+
+const dbPath = path.join(__dirname, '..', 'database', 'shop.db');
+const outputPath = path.join(__dirname, '..', 'database', 'd1-seed.sql');
+
+if (!fs.existsSync(dbPath)) {
+  console.error('Database file not found at:', dbPath);
+  process.exit(1);
+}
+
+const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READONLY, (err) => {
+  if (err) {
+    console.error('Error opening shop.db:', err.message);
+    process.exit(1);
+  }
+});
+
+function escapeSql(val) {
+  if (val === null || val === undefined) return 'NULL';
+  if (typeof val === 'number') return val;
+  const str = String(val).replace(/'/g, "''");
+  return `'${str}'`;
+}
+
+async function exportToD1() {
+  const tables = ['settings', 'admin_users', 'products', 'services', 'slider_slides', 'enquiries'];
+  let sqlDump = `-- ==============================================================================
+-- Cloudflare D1 Migration & Seed Script (Generated from database/shop.db)
+-- MAA SHARADA ENTERPRISES
+-- Execute with: npx wrangler d1 execute maa-sharda-db --file=./database/d1-seed.sql
 -- ==============================================================================
 
 -- 1. Settings Table
@@ -81,23 +110,31 @@ CREATE TABLE IF NOT EXISTS slider_slides (
 
 CREATE INDEX IF NOT EXISTS idx_slider_slides_order ON slider_slides(display_order, is_active);
 
--- Seed Settings
-INSERT OR IGNORE INTO settings (key, value) VALUES
-  ('SHOP_NAME', 'MAA SHARADA ENTERPRISES'),
-  ('SHOP_OWNER', 'ARUN KUMAR PATEL'),
-  ('SHOP_TAGLINE', 'BATTERY • INVERTER • SOLAR • ELECTRICAL SOLUTIONS'),
-  ('SHOP_ADDRESS', 'Gazipur road,Nearby Shahpur Aditya Petrol Pump,Panihari,Chaubepur Varanasi'),
-  ('SHOP_PHONE_NUMBER', '+91 63868 50612'),
-  ('SHOP_EMAIL', 'contact@maasharada.com'),
-  ('MAPS_QUERY', 'Gazipur road,Nearby Shahpur Aditya Petrol Pump,Panihari,Chaubepur Varanasi');
+`;
 
--- Seed Admin
-INSERT OR IGNORE INTO admin_users (id, email, password_hash, name) VALUES
-  (1, 'admin@maasharada.com', '$2b$10$wT0lF3iWsk.4Qh17W2a29.8gZkQvJ0C4F6aE9H3b5.yG1q2.3.4e', 'Admin Arun Patel');
+  for (const table of tables) {
+    await new Promise((resolve, reject) => {
+      db.all(`SELECT * FROM ${table}`, (err, rows) => {
+        if (err) return reject(err);
+        sqlDump += `\n-- Data for ${table} (${rows.length} rows)\n`;
+        if (rows.length > 0) {
+          rows.forEach((row) => {
+            const cols = Object.keys(row);
+            const vals = cols.map(c => escapeSql(row[c]));
+            sqlDump += `INSERT OR REPLACE INTO ${table} (${cols.join(', ')}) VALUES (${vals.join(', ')});\n`;
+          });
+        }
+        resolve();
+      });
+    });
+  }
 
--- Seed Slides
-INSERT OR IGNORE INTO slider_slides (id, title, subtitle, badge_text, badge_icon, badge_color, button_text, button_link, secondary_button_text, secondary_button_link, image_url, display_order, is_active) VALUES
-  (1, 'Power Backup You Can Trust', 'Quality batteries and inverters for your home, shop and business.', 'Inverters & Batteries', 'fas fa-bolt', 'default', 'Explore Products', '#products', 'Call Now', 'tel:+916386850612', 'images/hero/slider_battery_inverter.png', 1, 1),
-  (2, 'Switch to Solar Energy', 'Explore solar solutions for a brighter and energy-efficient future.', 'Solar Energy Solutions', 'fas fa-sun', 'solar', 'Enquire Now', '#solar', '', '', 'images/hero/slider_solar_energy.jpg', 2, 1),
-  (3, 'Battery Care & Reliable Service', 'Get assistance with battery testing, charging and repair services.', 'Diagnostic & Bench Service', 'fas fa-wrench', 'amber', 'Contact Us', '#contact', '', '', 'images/hero/slider_battery_repair.jpg', 3, 1),
-  (4, 'Your Everyday Business Needs', 'Photocopy and lamination services at MAA SHARADA ENTERPRISES.', 'Shop Utility Services', 'fas fa-print', 'purple', 'Visit Our Shop', '#contact', '', '', 'images/hero/slider_photocopy_lamination.jpg', 4, 1);
+  fs.writeFileSync(outputPath, sqlDump, 'utf8');
+  console.log(`D1 Seed script exported successfully to: ${outputPath}`);
+  db.close();
+}
+
+exportToD1().catch(err => {
+  console.error('Export error:', err);
+  process.exit(1);
+});
