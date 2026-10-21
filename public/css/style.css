@@ -440,8 +440,9 @@ input, select, textarea {
   width: 100%;
 }
 
+.mobile-drawer-header,
 .mobile-menu-support-item {
-  display: none;
+  display: none !important;
 }
 
 /* Nav Actions */
@@ -2252,18 +2253,18 @@ textarea.form-control {
 .toast.info { border-left: 4px solid var(--electric-blue); }
 
 /* ==========================================================================
-   MOBILE BACKDROP OVERLAY
+   MOBILE BACKDROP OVERLAY (Crisp Glass Layer Behind Drawer)
    ========================================================================== */
 .mobile-nav-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.5);
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
-  z-index: 1040;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 1030;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.28s ease;
+  transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 body.nav-open {
@@ -2273,6 +2274,13 @@ body.nav-open {
 body.nav-open .mobile-nav-backdrop {
   opacity: 1;
   pointer-events: auto;
+}
+
+/* Elevate header above backdrop when menu is open so child drawer is never blurred */
+body.nav-open .site-header {
+  z-index: 1050;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 /* ==========================================================================
@@ -2338,8 +2346,25 @@ body.nav-open .mobile-nav-backdrop {
     transform-origin: center;
   }
 
+  /* When mobile drawer is open, keep header surface transparent so backdrop covers cleanly */
+  body.nav-open .site-header {
+    background: transparent !important;
+    border-bottom-color: transparent !important;
+    box-shadow: none !important;
+  }
+
+  body.nav-open .site-header .nav-brand,
+  body.nav-open .site-header .search-trigger-btn,
+  body.nav-open .site-header .support-cta-btn {
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+  }
+
   .mobile-toggle.active {
-    background: #E2E8F0;
+    background: #FFFFFF;
+    border-color: rgba(255, 255, 255, 0.6);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
   }
 
   .mobile-toggle.active span:nth-child(1) {
@@ -2355,23 +2380,101 @@ body.nav-open .mobile-nav-backdrop {
     transform: translateY(-7px) rotate(-45deg);
   }
 
-  /* Slide-in Mobile Drawer */
+  /* Mobile Drawer Header with Shop Brand & Close Button */
+  .mobile-drawer-header {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.25rem 0 0.85rem 0;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-light);
+    width: 100%;
+  }
+
+  .mobile-drawer-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    min-width: 0;
+  }
+
+  .mobile-drawer-logo {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    border-radius: 50%;
+    object-fit: contain;
+  }
+
+  .mobile-drawer-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .mobile-drawer-name {
+    font-size: 0.92rem;
+    font-weight: 800;
+    color: var(--text-main);
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+    white-space: nowrap;
+  }
+
+  .mobile-drawer-tagline {
+    font-size: 0.62rem;
+    font-weight: 700;
+    color: var(--electric-blue);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  .mobile-drawer-close {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    border-radius: 50%;
+    border: 1px solid var(--border-light);
+    background: #F1F5F9;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    padding: 0;
+  }
+
+  .mobile-drawer-close:hover,
+  .mobile-drawer-close:active {
+    background: #E2E8F0;
+    color: var(--danger);
+  }
+
+  /* Slide-in Mobile Drawer - Crystal Clear & Never Blurred */
   .nav-menu {
     position: fixed;
     top: 0;
     left: -100%;
     width: min(320px, 86vw);
     height: 100dvh;
-    background: #FFFFFF;
+    background: #FFFFFF !important;
     flex-direction: column;
     align-items: stretch;
-    padding: 1.5rem 1.25rem 2rem 1.25rem;
-    gap: 0.35rem;
-    box-shadow: 10px 0 35px rgba(15, 23, 42, 0.16);
+    padding: 1.25rem 1.15rem 1.75rem 1.15rem;
+    gap: 0.25rem;
+    box-shadow: 14px 0 40px rgba(15, 23, 42, 0.28);
     transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     z-index: 1050;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    filter: none !important;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
   }
 
   .nav-menu.active {
@@ -2379,24 +2482,26 @@ body.nav-open .mobile-nav-backdrop {
   }
 
   .nav-link {
-    font-size: 1.05rem;
+    font-size: 1rem;
     font-weight: 700;
-    padding: 0.75rem 0.75rem;
+    padding: 0.7rem 0.75rem;
     width: 100%;
     border-bottom: 1px solid var(--border-subtle);
     display: flex;
     align-items: center;
-    color: var(--text-main);
+    color: #0F172A !important;
     border-radius: var(--radius-xs);
-    min-height: 48px;
+    min-height: 46px;
+    filter: none !important;
+    text-shadow: none !important;
     transition: all var(--transition-fast);
   }
 
   .nav-link:hover,
   .nav-link.active {
-    color: var(--electric-blue);
-    background: #F8FAFC;
-    padding-left: 1rem;
+    color: var(--electric-blue) !important;
+    background: #F1F5F9;
+    padding-left: 0.95rem;
   }
 
   .nav-link::after {

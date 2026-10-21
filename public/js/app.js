@@ -896,6 +896,11 @@ document.addEventListener('DOMContentLoaded', () => {
         mobileNavBackdrop.addEventListener('click', closeMenu);
       }
 
+      const mobileDrawerClose = document.getElementById('mobileDrawerClose');
+      if (mobileDrawerClose) {
+        mobileDrawerClose.addEventListener('click', closeMenu);
+      }
+
       navMenu.querySelectorAll('.nav-link').forEach(link => {
         link.addEventListener('click', closeMenu);
       });
