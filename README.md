@@ -56,7 +56,7 @@ Offerings: **Battery • Inverter • Solar • Electrical Products • Repair &
    - Edit slide titles, descriptions, badge pills, button labels, and target links.
    - One-click visibility toggle (Enable / Disable) and instant Up/Down display reordering.
    - Immediate live reflection without redeployment or Git commits.
-   - **Persistent Storage**: Integrates with **Cloudinary** (recommended for Railway) or persistent volume mounts (`UPLOADS_PATH`).
+   - **Persistent Storage**: Integrates with **Cloudinary** (recommended for Cloudflare / cloud hosting) or local persistent directory (`UPLOADS_PATH`).
 
 8. **Discreet Admin Console (Footer ONLY)**:
    - **NO ADMIN LOGIN IN THE NAVBAR**.
@@ -68,12 +68,12 @@ Offerings: **Battery • Inverter • Solar • Electrical Products • Repair &
 
 ## ☁️ Persistent Image Storage Configuration
 
-On hosting platforms like Railway, container filesystems are ephemeral (runtime file uploads are wiped upon redeploy) unless persistent storage is configured. Our slider system supports two production options:
+For cloud deployment (e.g., Cloudflare Pages), persistent cloud image storage is easily configured:
 
-### Option 1: Cloudinary (Recommended for Railway - Free Tier)
+### Option 1: Cloudinary (Free Cloud Storage)
 1. Register a free account at [Cloudinary](https://cloudinary.com).
 2. Retrieve your **Cloud Name**, **API Key**, and **API Secret** from your Cloudinary console.
-3. Add the following variables to Railway (or `.env`):
+3. Add the following variables to Cloudflare Pages Environment Variables (or `.env`):
    ```env
    CLOUDINARY_CLOUD_NAME=your_cloud_name
    CLOUDINARY_API_KEY=your_api_key
@@ -81,11 +81,11 @@ On hosting platforms like Railway, container filesystems are ephemeral (runtime 
    ```
 When configured, all uploaded slider images stream directly to Cloudinary and persist permanently in the cloud.
 
-### Option 2: Railway Persistent Volume
-If you attach a Persistent Volume to your Railway deployment (e.g., mounted at `/database`):
+### Option 2: Local Server Storage
+If running on a local machine or server with local disk storage:
 ```env
-DATABASE_PATH=/database/shop.db
-UPLOADS_PATH=/database/uploads/slider
+DATABASE_PATH=./database/shop.db
+UPLOADS_PATH=./public/uploads/slider
 ```
 
 ---

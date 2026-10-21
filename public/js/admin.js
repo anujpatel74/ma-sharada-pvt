@@ -1,5 +1,11 @@
 const API_BASE = (() => {
   if (typeof window === 'undefined') return '';
+  // 0. Custom backend override (e.g. when frontend is on Cloudflare Pages and backend is on Railway/Render)
+  if (window.__BACKEND_URL__) return window.__BACKEND_URL__.replace(/\/+$/, '');
+  try {
+    const savedBackend = localStorage.getItem('BACKEND_URL');
+    if (savedBackend) return savedBackend.replace(/\/+$/, '');
+  } catch (e) {}
   // 1. If loaded from filesystem directly (file://)
   if (window.location.protocol === 'file:') return 'http://localhost:5000';
   // 2. If running on a local development server on a different port (e.g. Live Server on port 5500, or 3000, 5173, etc.)
@@ -8,7 +14,7 @@ const API_BASE = (() => {
   if (isLocal && window.location.port !== '5000') {
     return `http://${host}:5000`;
   }
-  // 3. Otherwise (served by Express server on port 5000 or production domain)
+  // 3. Otherwise (served by Express server on port 5000, production domain, or Cloudflare Pages proxy)
   return '';
 })();
 /**

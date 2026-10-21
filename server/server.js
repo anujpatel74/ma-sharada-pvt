@@ -17,6 +17,9 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const HOST = process.env.HOST || '0.0.0.0';
 
+// Enable trust proxy for Cloudflare (correct client IP & SSL/HTTPS protocol detection)
+app.set('trust proxy', 1);
+
 // Comprehensive CORS Configuration (allows http, localhost, and file:/// origin null)
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
