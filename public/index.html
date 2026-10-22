@@ -1104,63 +1104,74 @@
   <!-- Application Logic -->
   <script src="js/app.js"></script>
   <script>
-    // Quick helpers
-    function filterByNavCategory(category) {
+    // Quick helpers (Attached globally on window)
+    window.filterByNavCategory = function(category) {
+      const brandBtn = document.querySelector('.brand-pill-btn[data-brand="ALL"]');
+      if (brandBtn) brandBtn.click();
       const select = document.getElementById('categoryFilter');
       if (select) {
-        select.value = category;
+        select.value = category || 'ALL';
         select.dispatchEvent(new Event('change'));
       }
+      const searchBox = document.getElementById('searchInput');
+      if (searchBox && searchBox.value) {
+        searchBox.value = '';
+        searchBox.dispatchEvent(new Event('input'));
+      }
       const prodSec = document.getElementById('products');
       if (prodSec) prodSec.scrollIntoView({ behavior: 'smooth' });
-    }
+    };
 
-    function filterByCategoryCard(category) {
-      filterByNavCategory(category);
-    }
+    window.filterByCategoryCard = function(category) {
+      window.filterByNavCategory(category);
+    };
 
-    function filterByCollection(brand, category) {
+    window.filterByCollection = function(brand, category) {
       const brandBtn = document.querySelector(`.brand-pill-btn[data-brand="${brand}"]`);
-      if (brandBtn) {
-        brandBtn.click();
+      if (brandBtn) brandBtn.click();
+      const select = document.getElementById('categoryFilter');
+      if (select) {
+        select.value = category || 'ALL';
+        select.dispatchEvent(new Event('change'));
       }
-      if (category !== 'ALL') {
-        const select = document.getElementById('categoryFilter');
-        if (select) {
-          select.value = category;
-          select.dispatchEvent(new Event('change'));
-        }
+      const searchBox = document.getElementById('searchInput');
+      if (searchBox && searchBox.value) {
+        searchBox.value = '';
+        searchBox.dispatchEvent(new Event('input'));
       }
       const prodSec = document.getElementById('products');
       if (prodSec) prodSec.scrollIntoView({ behavior: 'smooth' });
-    }
+    };
 
-    function filterByBrandPill(brand) {
-      const buttons = document.querySelectorAll('.brand-pill-btn');
-      buttons.forEach(btn => {
-        if (btn.getAttribute('data-brand') === brand) {
-          btn.click();
-        }
-      });
+    window.filterByBrandPill = function(brand) {
+      const brandBtn = document.querySelector(`.brand-pill-btn[data-brand="${brand}"]`);
+      if (brandBtn) brandBtn.click();
+      const searchBox = document.getElementById('searchInput');
+      if (searchBox && searchBox.value) {
+        searchBox.value = '';
+        searchBox.dispatchEvent(new Event('input'));
+      }
       const prodSec = document.getElementById('products');
       if (prodSec) prodSec.scrollIntoView({ behavior: 'smooth' });
-    }
+    };
 
-    function scrollToCatalogueSearch() {
+    window.scrollToCatalogueSearch = function() {
       const searchBox = document.getElementById('searchInput');
       if (searchBox) {
         searchBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
         setTimeout(() => searchBox.focus(), 400);
       }
-    }
+    };
 
-    function scrollToServices() {
+    window.scrollToServices = function() {
       const sec = document.getElementById('services');
       if (sec) sec.scrollIntoView({ behavior: 'smooth' });
-    }
+    };
 
-    function openServiceEnquiry(serviceName) {
-      if (window.appEnquiry) {
+    window.openServiceEnquiry = function(serviceName) {
+      if (window.openEnquiryForService) {
+        window.openEnquiryForService(serviceName);
+      } else if (window.appEnquiry) {
         window.appEnquiry(serviceName);
       } else {
         const input = document.getElementById('enquiryProduct');
@@ -1168,7 +1179,7 @@
         const modal = document.getElementById('enquiryModal');
         if (modal) modal.classList.add('active');
       }
-    }
+    };
   </script>
 </body>
 

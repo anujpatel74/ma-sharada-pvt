@@ -1072,6 +1072,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   window.appEnquiry = window.openEnquiryGeneral;
+  window.openServiceEnquiry = window.openEnquiryForService;
 
   function openModal(modal) {
     if (!modal) return;

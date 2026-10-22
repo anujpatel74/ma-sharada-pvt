@@ -19,9 +19,9 @@ not_found_handling = "single-page-application"
 [[d1_databases]]
 binding = "DB"
 database_name = "maa-sharda-db"
-database_id = "daa51131-2961-4861-8806-96f6dbe41a7e"
+database_id = "7d55be82-c712-4bd2-a2fd-ad05c60a6352"
 
 # 3. Default Public Environment Variables
 [vars]
 SHOP_PHONE_NUMBER = "+91 63868 50612"
-SHOP_EMAIL = "[EMAIL_ADDRESS]"
+SHOP_EMAIL = "contact@maasharada.com"
